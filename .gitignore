@@ -1,0 +1,9 @@
+.Rproj.user
+.Rhistory
+.RData
+.DS_Store
+*.Rcheck/
+*.tar.gz
+docs/
+# backups da regra do projeto de pesquisa -- nunca versionar
+*_backup_*

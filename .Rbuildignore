@@ -1,0 +1,9 @@
+^LICENSE\.md$
+^data-raw$
+^README\.md$
+^CONTEXT\.md$
+_backup_[0-9]{4}-[0-9]{2}-[0-9]{2}$
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^\.github$

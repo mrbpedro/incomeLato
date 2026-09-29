@@ -1,0 +1,80 @@
+# =============================================================================
+# synthetic_data.R
+# Bloco 15, TAREFA 8: gerador de dado SINTETICO com a estrutura do
+# Latinobarometro (nomes de coluna conhecidos, codigos de pais publicos,
+# distribuicoes plausiveis de preditor) -- SEM valores reais de nenhum
+# respondente. Para vinheta/testes/exemplos, sem redistribuir microdado.
+# =============================================================================
+
+#' Gera um data.frame sintetico com a estrutura de uma onda do Latinobarometro
+#'
+#' Nenhum valor vem de um respondente real -- distribuicoes plausiveis
+#' sorteadas aleatoriamente, com casos de teste propositais incluidos
+#' (NA em carro, respondentes da Venezuela, um pais fora dos 15 ativos).
+#'
+#' @param year ano da onda sintetica (deve estar em [educ3_validated_years()]
+#'   para poder ser usado no restante do pipeline de teste).
+#' @param n numero de respondentes sinteticos por pais.
+#' @param seed semente aleatoria.
+#' @return data.frame com colunas de nome IDENTICO as brutas do
+#'   Latinobarometro para o ano escolhido (achadas via o crosswalk
+#'   minimo e a tabela de anos validados), preenchidas com valores
+#'   sinteticos. Atributo `synthetic = TRUE` anexado como marcador.
+#' @examples
+#' sim <- simulate_latinobarometro_wave(2018, n = 20)
+#' dim(sim)
+#' attr(sim, "synthetic")
+#' @export
+simulate_latinobarometro_wave <- function(year, n = 200, seed = 42) {
+  set.seed(seed)
+  cw <- .crosswalk_min(); cw_onda <- cw[cw$year == year, ]
+  if (nrow(cw_onda) == 0) stop("Sem entrada de crosswalk para o ano ", year, ".", call. = FALSE)
+  educ_tab <- .educ3_anos_validados(); educ_linha <- educ_tab[educ_tab$year == year, ]
+  if (nrow(educ_linha) == 0) stop("Ano ", year, " nao esta na tabela de anos validados de educacao.", call. = FALSE)
+
+  cw_pais <- read.csv(system.file("extdata", "country_crosswalk.csv", package = "incomeLato"), stringsAsFactors = FALSE)
+  # 15 paises ativos + Venezuela (caso de teste proposital) + 1 pais fora de escopo (Guatemala)
+  paises_teste <- cw_pais[cw_pais$iso3 %in% c(PAISES_ATIVOS, "VEN", "GTM"), ]
+
+  achar_nome <- function(conceito) {
+    linha <- cw_onda[cw_onda$harmonized_concept == conceito, ]
+    if (nrow(linha) == 0 || is.na(linha$raw_variable_name[1])) return(paste0("sim_", conceito))
+    linha$raw_variable_name[1]
+  }
+  col_sex <- achar_nome("sex"); col_age <- achar_nome("age"); col_country <- achar_nome("country")
+  col_weight <- achar_nome("weight"); col_car <- achar_nome("owns_car"); col_wash <- achar_nome("owns_washing_machine")
+  col_educ <- if (educ_linha$scheme[1] == "ambos_2024") strsplit(educ_linha$raw_variable_name[1], ";")[[1]][1] else educ_linha$raw_variable_name[1]
+  scheme <- educ_linha$scheme[1]
+  codigo_max_educ <- switch(scheme, cat7 = 7, cat3 = 3, years17 = 17, ambos_2024 = 7, 7)
+
+  blocos <- lapply(seq_len(nrow(paises_teste)), function(i) {
+    n_i <- n
+    data.frame(
+      row = seq_len(n_i),
+      country = paises_teste$country_numeric[i],
+      sex = sample(1:2, n_i, replace = TRUE),
+      age = pmin(pmax(round(stats::rnorm(n_i, mean = 42, sd = 17)), 18), 95),
+      educ = sample(seq_len(codigo_max_educ), n_i, replace = TRUE),
+      car = sample(c(0, 1, NA), n_i, replace = TRUE, prob = c(0.45, 0.45, 0.10)),
+      wash = sample(c(0, 1, NA), n_i, replace = TRUE, prob = c(0.35, 0.55, 0.10)),
+      weight = round(stats::runif(n_i, 0.6, 1.5), 3)
+    )
+  })
+  d <- do.call(rbind, blocos)
+
+  saida <- data.frame(row.names = seq_len(nrow(d)))
+  saida[[col_sex]] <- d$sex
+  saida[[col_age]] <- d$age
+  saida[[col_country]] <- d$country
+  saida[[col_weight]] <- d$weight
+  saida[[col_car]] <- d$car
+  saida[[col_wash]] <- d$wash
+  saida[[col_educ]] <- d$educ
+  if (scheme == "ambos_2024") {
+    col_educ_years <- strsplit(educ_linha$raw_variable_name[1], ";")[[1]][2]
+    saida[[col_educ_years]] <- sample(1:17, nrow(d), replace = TRUE)
+  }
+  attr(saida, "synthetic") <- TRUE
+  attr(saida, "synthetic_note") <- "Dado 100% sintetico, gerado por simulate_latinobarometro_wave(). Nenhum valor vem de um respondente real do Latinobarometro."
+  saida
+}

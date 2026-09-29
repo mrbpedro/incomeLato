@@ -1,0 +1,87 @@
+---
+title: "When to use incomeLato, and when not to"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{When to use incomeLato, and when not to}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
+
+The Latinobarómetro asks about political attitudes and behavior but has no
+income measure that is comparable across countries and waves. `incomeLato`
+fills that gap with a probability: for each respondent, how likely they are
+to be in the bottom 50%, the middle 40% or the top 10% of their own country
+in that survey year. Those probabilities are good at one job and bad at
+another, and this vignette is about telling the two apart.
+
+## Good use: aggregate composition
+
+Use `prob_bottom50` as a continuous weight to describe groups. The question
+"what share of the poorest half of Brazilians supported party X in 2018?" is
+answered by a weighted mean of the party indicator, with weight
+`prob_bottom50 * survey_weight`. Validated against LAPOP, this kind of
+aggregate recovers the observed shares closely:
+
+- Spearman correlation between predicted and observed shares of 0.97–0.99
+  across the three income groups (339 country-wave-party comparisons,
+  per-class validation under model v1.4);
+- under the current model v1.5, a mean absolute error of 0.670 percentage
+  points in the bottom-50 support share, with the most-supported party
+  matching in 97% of 357 comparisons across 15 countries.
+
+## Bad use: classifying individuals
+
+At the level of one respondent the model is weak: Spearman correlations of
+0.21–0.42 between a person's predicted probability and their observed
+position (92,940 LAPOP respondents, validation under v1.4). Five predictors
+(sex, age, education, car and washing machine ownership) cannot place an
+individual reliably. So:
+
+- do not turn the probabilities into a label (`prob_bottom50 > 0.5` → "poor")
+  and treat that label as observed income;
+- do not use the probabilities as an individual-level covariate whose
+  coefficient you interpret as the effect of income.
+
+## Also not: the size of the bottom 50% over time
+
+`mean(prob_bottom50)` per country-wave is not an estimate of how large the
+bottom half is, and its movement over time is not a trend. The aggregate
+margin drifts for reasons internal to the model. The column
+`veredito_deriva_temporal` reports the drift verdict per country from the
+article's validation, and `flag_margin` marks the countries where the margin
+did not validate cleanly (`NA` for Mexico, where it was never assessed).
+
+## A minimal example
+
+The package includes a generator of synthetic data with the structure of a
+Latinobarómetro wave; no real respondent is involved.
+
+```{r}
+library(incomeLato)
+sim <- simulate_latinobarometro_wave(2018, n = 50)
+core <- harmonize_core_predictors(sim, 2018)
+educ <- harmonize_educ3_latinobarometro(sim, 2018)
+cw <- read.csv(system.file("extdata", "country_crosswalk.csv", package = "incomeLato"))
+banco <- data.frame(year = 2018, country_raw = core$country_raw,
+                    respondent_row_id = seq_len(nrow(sim)), weight = core$weight,
+                    sexo_final = core$sexo_final, idade_final = core$idade_final,
+                    educ3_final = educ$educ3_final, owns_car = core$owns_car,
+                    owns_washing_machine = core$owns_washing_machine)
+banco <- merge(banco, cw, by.x = "country_raw", by.y = "country_numeric")
+res <- suppressWarnings(predict_latinobarometro_income(banco))
+
+# aggregate use: support for a (synthetic) party among the bottom 50%,
+# weighting each respondent by prob_bottom50 times the survey weight
+set.seed(1)
+res$supports_A <- rbinom(nrow(res), 1, 0.4)
+ok <- !is.na(res$prob_bottom50)
+w <- res$prob_bottom50[ok] * res$weight[ok]
+round(tapply(w * res$supports_A[ok], res$iso3[ok], sum) / tapply(w, res$iso3[ok], sum), 2)
+```
+
+With real data, replace the synthetic steps with a single call:
+`income_lato("folder/with/latinobarometro/files")`.

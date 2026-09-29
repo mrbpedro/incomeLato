@@ -1,0 +1,23 @@
+citHeader("To cite incomeLato in publications, please use the first entry. Also cite each Latinobarometro wave you use; the second entry is a template -- check the wave's technical documentation (ficha tecnica) for the exact form.")
+
+bibentry(
+  bibtype = "Manual",
+  title = "{incomeLato}: Relative Income Position for {Latinobarometro} Respondents from a Frozen Imputation Model",
+  author = person("Pedro", "Barbosa"),
+  year = "2026",
+  note = "R package version 0.1.0",
+  url = "https://github.com/mrbpedro/incomeLato",
+  # DOI adicionado após a release v0.1.0 (Zenodo)
+  textVersion = "Barbosa, P. (2026). incomeLato: Relative Income Position for Latinobarometro Respondents from a Frozen Imputation Model. R package version 0.1.0. https://github.com/mrbpedro/incomeLato"
+)
+
+bibentry(
+  bibtype = "Misc",
+  title = "Latinobar{\\'o}metro [YEAR]",
+  author = person("Corporación Latinobarómetro"),
+  year = "[YEAR]",
+  howpublished = "Dataset",
+  address = "Santiago de Chile",
+  url = "https://www.latinobarometro.org",
+  textVersion = "Corporacion Latinobarometro ([YEAR]). Latinobarometro [YEAR] [dataset]. Santiago de Chile. https://www.latinobarometro.org"
+)

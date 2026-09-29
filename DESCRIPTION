@@ -1,0 +1,43 @@
+Package: incomeLato
+Title: Relative Income Position for 'Latinobarometro' Respondents from a
+    Frozen Imputation Model
+Version: 0.1.0
+Authors@R: person("Pedro", "Barbosa", email = "mrbarbosa.pedro@gmail.com",
+    role = c("aut", "cre", "cph"))
+Description: Applies a frozen multinomial model (version 'v1.5') that
+    predicts each respondent's relative income position within their
+    country and survey year -- the probabilities of belonging to the
+    bottom 50 percent, the middle 40 percent and the top 10 percent -- to
+    'Latinobarometro' microdata that the user downloads from the official
+    source. The model was trained on national household surveys and
+    validated against 'LAPOP AmericasBarometer' data for 15 Latin American
+    countries. It uses five predictors (sex, age, education, car
+    ownership, washing machine ownership) plus a country effect, and the
+    package harmonizes them across waves 1995-2024 through a manually
+    curated crosswalk. The package ships only model parameters and
+    variable-name metadata: it contains no survey microdata and no
+    statistics computed from it. Probabilities are meant as continuous
+    weights for aggregate analysis, not for classifying individuals.
+License: MIT + file LICENSE
+URL: https://github.com/mrbpedro/incomeLato, https://mrbpedro.github.io/incomeLato
+BugReports: https://github.com/mrbpedro/incomeLato/issues
+Encoding: UTF-8
+Roxygen: list(markdown = TRUE)
+RoxygenNote: 7.3.3
+Depends:
+    R (>= 3.5.0)
+Imports:
+    dplyr,
+    Matrix,
+    glmnet,
+    haven,
+    stats,
+    utils,
+    tools
+Suggests:
+    knitr,
+    readstata13,
+    rmarkdown,
+    testthat (>= 3.0.0)
+VignetteBuilder: knitr
+Config/testthat/edition: 3

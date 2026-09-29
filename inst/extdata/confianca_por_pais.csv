@@ -1,0 +1,16 @@
+"country","n_fontes","n_continuous_hard","n_band_soft","pct_continuous_hard","confianca_alvo_treino","piso_confianca_projeto","nota"
+"ARG",2,2,0,100,"maior",FALSE,NA
+"BOL",6,6,0,100,"maior",FALSE,NA
+"BRA",4,4,0,100,"maior",FALSE,NA
+"CHL",4,4,0,100,"maior",FALSE,NA
+"COL",4,4,0,100,"maior",FALSE,NA
+"CRI",2,0,2,0,"menor",FALSE,NA
+"ECU",1,1,0,100,"maior",FALSE,NA
+"HND",2,0,2,0,"menor",FALSE,NA
+"NIC",3,1,2,33.3,"menor",FALSE,NA
+"PER",5,4,1,80,"maior",FALSE,"Atualizado 2026-07-11: 3 ENAHO novas (2005/2010/2015, continuous_hard, ponderadas, ~73.6K) dominam a composicao -- confianca sobe de media para maior. PER_SPC_1998 (band_soft, sem peso) e PER_ENAHO_2000 (continuous_hard, N=1191) continuam no pool via preditor-por-fonte, mas nao definem mais a confianca do pais."
+"PRY",2,0,2,0,"menor",TRUE,"2026-07-06: PISO DE CONFIANCA DO PROJETO. Treina inteiramente em fontes nao-ponderadas (PRY_SPC_1996, PRY_SPC_1998), bracket-nativas, dos anos 1990, admitidas no treino principal pela regra de robustez do rank (peso uniforme assumido, training_quality_flag=main_flagged_unweighted) -- nao pela regra rigida anterior, que zerava o pais. Paraguai nao tem NENHUMA onda SPC com peso valido no projeto, logo a robustez do nao-ponderado e assumida por analogia ao padrao geral observado em outros paises (teste de sensibilidade de peso, scripts/50), NAO verificada internamente no proprio PRY (sem par ponderado para comparar). Isto nao exclui o pais do treino -- contextualiza a leitura: banda de incerteza mais larga na figura final para PRY do que para qualquer outro pais ativo."
+"SLV",2,0,2,0,"menor",FALSE,NA
+"URY",2,2,0,100,"maior",FALSE,NA
+"PAN",2,2,0,100,"maior",FALSE,"Incorporado 2026-07-10 via IPUMS-Panama (censo 1990+2010, 100% continuous_hard -- 2 fontes de renda continua com rank interno). Confianca maior, mesmo padrao de ARG/BOL/BRA/CHL/COL/ECU/URY."
+"MEX",5,5,0,100,"maior",FALSE,"Incorporado 2026-07-13 (v1.5): 5 ENIGH com renda continua (1996, 2000, 2008, 2018, 2022). Mexico = 10,8% dos respondentes do treino e 30,3% do peso efetivo de perda (escala dos pesos ENIGH)."

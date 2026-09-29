@@ -1,0 +1,25 @@
+url: https://mrbpedro.github.io/incomeLato
+template:
+  bootstrap: 5
+
+reference:
+  - title: Main function
+    contents:
+      - income_lato
+  - title: Step by step
+    contents:
+      - prepare_latinobarometro_income_inputs
+      - predict_latinobarometro_income
+  - title: Harmonization
+    contents:
+      - harmonize_core_predictors
+      - harmonize_educ3_latinobarometro
+      - educ3_validated_years
+  - title: Synthetic data
+    contents:
+      - simulate_latinobarometro_wave
+
+articles:
+  - title: Guides
+    contents:
+      - when-to-use
