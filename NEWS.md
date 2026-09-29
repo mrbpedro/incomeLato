@@ -2,6 +2,9 @@
 
 First public release.
 
+Archived on Zenodo: DOI 10.5281/zenodo.23045517 (this version);
+10.5281/zenodo.23045516 (all versions).
+
 * Applies the frozen income-position model v1.5 (15 countries: Argentina,
   Bolivia, Brazil, Chile, Colombia, Costa Rica, Ecuador, El Salvador,
   Honduras, Mexico, Nicaragua, Panama, Paraguay, Peru, Uruguay) to

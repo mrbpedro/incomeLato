@@ -1,5 +1,7 @@
 # incomeLato
 
+[![DOI](https://zenodo.org/badge/1395470164.svg)](https://doi.org/10.5281/zenodo.23045516)
+
 `incomeLato` estimates where each Latinobarómetro respondent sits in their
 country's income distribution: the probability of belonging to the bottom 50%,
 the middle 40% and the top 10% of their country in that survey year. It applies
@@ -158,7 +160,9 @@ you obtain from each source under its own terms.
 ## Citation
 
 `citation("incomeLato")` gives the citation for the package and a template
-for citing the Latinobarómetro waves you use.
+for citing the Latinobarómetro waves you use. The package is archived on
+Zenodo: DOI [10.5281/zenodo.23045516](https://doi.org/10.5281/zenodo.23045516)
+(all versions).
 
 ## License
 
