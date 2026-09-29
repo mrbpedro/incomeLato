@@ -5,10 +5,10 @@ bibentry(
   title = "{incomeLato}: Relative Income Position for {Latinobarometro} Respondents from a Frozen Imputation Model",
   author = person("Pedro", "Barbosa"),
   year = "2026",
-  note = "R package version 0.1.0",
+  note = "R package version 0.1.1",
   doi = "10.5281/zenodo.23045516",
   url = "https://doi.org/10.5281/zenodo.23045516",
-  textVersion = "Barbosa, P. (2026). incomeLato: Relative Income Position for Latinobarometro Respondents from a Frozen Imputation Model. R package version 0.1.0. https://doi.org/10.5281/zenodo.23045516"
+  textVersion = "Barbosa, P. (2026). incomeLato: Relative Income Position for Latinobarometro Respondents from a Frozen Imputation Model. R package version 0.1.1. https://doi.org/10.5281/zenodo.23045516"
 )
 
 bibentry(

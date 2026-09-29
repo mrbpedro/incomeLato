@@ -2,45 +2,45 @@
 % Please edit documentation in R/prepare_inputs.R
 \name{prepare_latinobarometro_income_inputs}
 \alias{prepare_latinobarometro_income_inputs}
-\title{Prepara os preditores de renda a partir dos microdados brutos do usuario}
+\title{Prepare the income predictors from the user's raw microdata}
 \usage{
 prepare_latinobarometro_income_inputs(raw_dir, years = NULL, countries = NULL)
 }
 \arguments{
-\item{raw_dir}{diretorio com os arquivos \code{.dta} ou \code{.sav} brutos, ou o
-caminho de um unico arquivo. Um arquivo por onda, com o ano em algum
-lugar do nome (ex. "Latinobarometro_2018_Eng_Stata_v20190303.dta"). Se
-a mesma onda estiver nos dois formatos, deixe so um no diretorio. Para
-um arquivo unico sem o ano no nome, informe-o em \code{years}.}
+\item{raw_dir}{directory with the raw \code{.dta} or \code{.sav} files, or the
+path to a single file. One file per wave, with the year somewhere in
+the name (e.g. "Latinobarometro_2018_Eng_Stata_v20190303.dta"). If the
+same wave is present in both formats, keep only one in the directory.
+For a single file without the year in its name, give it in \code{years}.}
 
-\item{years}{vetor de anos a processar (default: todos os arquivos
-encontrados em \code{raw_dir}).}
+\item{years}{vector of years to process (default: every file found in
+\code{raw_dir}).}
 
-\item{countries}{vetor de codigos ISO3 para filtrar (default: todos).}
+\item{countries}{vector of ISO3 codes to filter on (default: all).}
 }
 \value{
-data.frame com \verb{year, iso3, country_raw, respondent_row_id, weight, sexo_final, idade_final, educ3_final, owns_car, owns_washing_machine, source_file, harmonization_flags}. Atributos
-\code{ondas_detectadas} (ondas encontradas e solicitadas) e
-\code{ondas_ignoradas} (as que falharam na harmonizacao).
+data.frame with \verb{year, iso3, country_raw, respondent_row_id, weight, sexo_final, idade_final, educ3_final, owns_car, owns_washing_machine, source_file, harmonization_flags}. Attributes
+\code{ondas_detectadas} (waves found and requested) and \code{ondas_ignoradas}
+(waves whose harmonization failed).
 }
 \description{
-Le arquivos \code{.dta} do Latinobarometro (baixados pelo usuario da fonte
-oficial -- este pacote NAO distribui microdados), detecta a onda pelo
-nome do arquivo, harmoniza os preditores do modelo de renda
-(sexo/idade/carro/lavadora/pais/peso via crosswalk minimo; educacao
-via \code{\link[=harmonize_educ3_latinobarometro]{harmonize_educ3_latinobarometro()}}, restrita a anos validados).
+Reads Latinobarometro \code{.dta}/\code{.sav} files (downloaded by the user from
+the official source -- this package does NOT distribute microdata),
+detects the wave from the file name, and harmonizes the income model's
+predictors (sex/age/car/washing machine/country/weight via a minimal
+crosswalk; education via \code{\link[=harmonize_educ3_latinobarometro]{harmonize_educ3_latinobarometro()}}, restricted
+to validated years).
 }
 \examples{
-# exemplo runnable com dado 100\% sintetico gravado como .dta
-# temporario -- nenhum microdado real do Latinobarometro e usado
-# ou distribuido. Em uso real, `raw_dir` aponta para arquivos .dta
-# baixados pelo usuario em latinobarometro.org. Ano 2011 escolhido
-# aqui por ter nomes de variavel bruta sem ponto (ex. "REEDUC1"),
-# compativel com haven::write_dta(); alguns anos (ex. 2018,
-# "REEDUC.1") tem ponto no nome original e nao podem ser
-# regravados como .dta por essa via -- nao afeta a leitura normal
-# de arquivos baixados do Latinobarometro, so a escrita sintetica
-# deste exemplo.
+# runnable example with 100\% synthetic data written as a temporary
+# .dta -- no real Latinobarometro microdata is used or distributed. In
+# real use, `raw_dir` points to .dta files downloaded by the user from
+# latinobarometro.org. Year 2011 is chosen here because its raw variable
+# names have no dot (e.g. "REEDUC1"), which haven::write_dta() accepts;
+# some years (e.g. 2018, "REEDUC.1") have a dot in the original name and
+# cannot be rewritten as .dta this way -- this does not affect reading
+# files downloaded from the Latinobarometro, only the synthetic writing
+# in this example.
 sim <- simulate_latinobarometro_wave(2011, n = 30)
 tmp_dir <- tempfile("lb_sim_"); dir.create(tmp_dir)
 haven::write_dta(sim, file.path(tmp_dir, "Latinobarometro_2011_sim.dta"))

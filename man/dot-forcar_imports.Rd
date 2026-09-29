@@ -2,16 +2,15 @@
 % Please edit documentation in R/design_matrix.R
 \name{.forcar_imports}
 \alias{.forcar_imports}
-\title{Forca o carregamento de namespaces de dependencias (uso interno)}
+\title{Force loading of dependency namespaces (internal use)}
 \usage{
 .forcar_imports()
 }
 \description{
-Sem isso, o S3 dispatch de \code{stats::predict()} sobre um objeto
-\code{"multnet"/"glmnet"} falha ("no applicable method") -- estar listado
-em \code{Imports} no DESCRIPTION nao basta se nenhuma linha de codigo usa
-\verb{@importFrom}; o NAMESPACE precisa de uma linha de import
-correspondente para o namespace ser carregado (achado real do
-\verb{R CMD check}, Bloco 16).
+Without this, S3 dispatch of \code{stats::predict()} on a
+\code{"multnet"/"glmnet"} object fails ("no applicable method") -- being
+listed in \code{Imports} in DESCRIPTION is not enough if no line of code
+uses \verb{@importFrom}; NAMESPACE needs a matching import line for the
+namespace to be loaded (found by \verb{R CMD check}).
 }
 \keyword{internal}

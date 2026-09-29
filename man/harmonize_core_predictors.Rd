@@ -2,25 +2,25 @@
 % Please edit documentation in R/harmonize_predictors.R
 \name{harmonize_core_predictors}
 \alias{harmonize_core_predictors}
-\title{Harmoniza os preditores sexo/idade/carro/lavadora/pais/peso para uma onda}
+\title{Harmonize the sex/age/car/washing machine/country/weight predictors for one wave}
 \usage{
 harmonize_core_predictors(raw_data, year)
 }
 \arguments{
-\item{raw_data}{data.frame bruto de uma onda do Latinobarometro.}
+\item{raw_data}{raw data.frame of one Latinobarometro wave.}
 
-\item{year}{ano da onda.}
+\item{year}{survey year of the wave.}
 }
 \value{
-data.frame com \code{sexo_final}, \code{idade_final}, \code{owns_car},
-\code{owns_washing_machine}, \code{country_raw}, \code{weight}, e uma coluna de
-flags por preditor ausente.
+data.frame with \code{sexo_final}, \code{idade_final}, \code{owns_car},
+\code{owns_washing_machine}, \code{country_raw}, \code{weight}, and a column of
+flags for missing predictors.
 }
 \description{
-Harmoniza os preditores sexo/idade/carro/lavadora/pais/peso para uma onda
+Harmonize the sex/age/car/washing machine/country/weight predictors for one wave
 }
 \examples{
-# dado 100\% sintetico -- nenhum valor de respondente real
+# 100\% synthetic data -- no real respondent value
 sim <- simulate_latinobarometro_wave(2018, n = 50)
 core <- harmonize_core_predictors(sim, 2018)
 str(core)

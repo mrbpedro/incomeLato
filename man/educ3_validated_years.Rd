@@ -2,22 +2,21 @@
 % Please edit documentation in R/harmonize_educ3.R
 \name{educ3_validated_years}
 \alias{educ3_validated_years}
-\title{Lista os anos com logica de educacao validada}
+\title{List the years with validated education logic}
 \usage{
 educ3_validated_years()
 }
 \value{
-data.frame com \code{year}, \code{raw_variable_name}, \code{scheme},
-\code{respondent_or_head}, \code{confidence_note} -- uma linha por onda
-validada (1995-2024; 2024 com confianca reduzida, ver
-\code{confidence_note}).
+data.frame with \code{year}, \code{raw_variable_name}, \code{scheme},
+\code{respondent_or_head}, \code{confidence_note} -- one row per validated wave
+(1995-2024; 2024 with reduced confidence, see \code{confidence_note}).
 }
 \description{
-Anos fora desta tabela nao sao processados por
-\code{\link[=harmonize_educ3_latinobarometro]{harmonize_educ3_latinobarometro()}} -- a funcao recusa em vez de
-adivinhar esquema/variavel para uma onda nao vista. Adicionar uma
-onda nova exige atualizar \code{inst/extdata/educ3_validated_years.csv}
-manualmente (ver README do pacote).
+Years outside this table are not processed by
+\code{\link[=harmonize_educ3_latinobarometro]{harmonize_educ3_latinobarometro()}} -- the function refuses instead of
+guessing the scheme/variable for an unseen wave. Adding a new wave
+requires updating \code{inst/extdata/educ3_validated_years.csv} manually
+(see the package README).
 }
 \examples{
 anos <- educ3_validated_years()

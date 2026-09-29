@@ -2,7 +2,7 @@
 % Please edit documentation in R/harmonize_educ3.R
 \name{harmonize_educ3_latinobarometro}
 \alias{harmonize_educ3_latinobarometro}
-\title{Harmoniza educ3_final para uma onda do Latinobarometro}
+\title{Harmonize educ3_final for one Latinobarometro wave}
 \usage{
 harmonize_educ3_latinobarometro(
   raw_data,
@@ -11,44 +11,44 @@ harmonize_educ3_latinobarometro(
 )
 }
 \arguments{
-\item{raw_data}{data.frame bruto de uma onda do Latinobarometro
-(colunas com os nomes originais do arquivo baixado pelo usuario).}
+\item{raw_data}{raw data.frame of one Latinobarometro wave (columns
+with the original names of the file downloaded by the user).}
 
-\item{year}{ano da onda (numeric).}
+\item{year}{survey year of the wave (numeric).}
 
-\item{on_unvalidated_year}{"error" (padrao, recusa) ou "warning"
-(emite aviso forte e retorna NA para toda a coluna -- usar com
-cautela, nunca em producao sem revisao manual).}
+\item{on_unvalidated_year}{"error" (default, refuses) or "warning"
+(issues a strong warning and returns NA for the whole column -- use
+with caution, never in production without manual review).}
 }
 \value{
-data.frame com 1 linha por respondente: \code{educ3_final},
+data.frame with 1 row per respondent: \code{educ3_final},
 \code{educ3_source_variable}, \code{educ3_source_scheme}, \code{educ3_quality_flag}.
 }
 \description{
-Constroi a variavel de escolaridade em 3 categorias
-(basic_or_less/secondary/higher_or_more) usada pelo modelo de renda,
-consultando a tabela de anos validados (nao o crosswalk geral --
-ver nota no cabecalho do arquivo). Anos fora da tabela de anos
-validados NAO sao processados -- a funcao para com erro, nunca
-adivinha esquema/variavel para uma onda nao vista.
+Builds the 3-category education variable
+(basic_or_less/secondary/higher_or_more) used by the income model,
+using the table of validated years (not the general crosswalk -- see
+the note in the file header). Years outside the table of validated
+years are NOT processed -- the function stops with an error and never
+guesses the scheme/variable for an unseen wave.
 }
 \details{
-A onda 2024 tem confianca reduzida -- \code{readstata13} nao
-recuperou os rotulos de valor deste arquivo especificamente, entao
-os codigos foram inferidos por ordem historica identica confirmada
-em 9 outras ondas, nao por confirmacao direta de rotulo. Use com
-cautela quando \code{educ3_quality_flag} vier
+The 2024 wave has reduced confidence -- \code{readstata13} did not
+recover the value labels of this particular file, so the codes were
+inferred from the identical historical order confirmed in 9 other
+waves, not by direct confirmation from labels. Use with caution when
+\code{educ3_quality_flag} is
 \code{"confianca_reduzida_2024_codigos_inferidos"}.
 }
 \examples{
-# dado 100\% sintetico -- nenhum valor de respondente real
+# 100\% synthetic data -- no real respondent value
 sim <- simulate_latinobarometro_wave(2018, n = 50)
 educ <- harmonize_educ3_latinobarometro(sim, 2018)
 table(educ$educ3_final, useNA = "ifany")
 
-# ano fora da tabela de anos validados -- recusa, nao adivinha
+# year outside the table of validated years -- refuses, does not guess
 tryCatch(
   harmonize_educ3_latinobarometro(sim, 2099),
-  error = function(e) message("Recusado como esperado: ", conditionMessage(e))
+  error = function(e) message("Refused as expected: ", conditionMessage(e))
 )
 }

@@ -61,8 +61,10 @@ predições: v1.5 bruto difere até 0,31; v1.5 + recalibradores v1.5 difere até
    r-universe, URL/BugReports no DESCRIPTION — ações do autor.
 3. Formato oficial de citação do Latinobarómetro por rodada — o site não o
    publica nas páginas consultadas; `inst/CITATION` traz um modelo genérico.
-4. Mensagens e documentação das funções estão em português; README, NEWS e
-   vignette em inglês.
+4. Desde a v0.1.1, mensagens, avisos, ajuda das funções e códigos de
+   `motivo_exclusao` estão em inglês. Os nomes de colunas (`elegivel`,
+   `motivo_exclusao`, `veredito_deriva_temporal` etc.) continuam em
+   português; padronizar exige aviso de depreciação numa versão futura.
 
 ## Estender para uma onda nova
 

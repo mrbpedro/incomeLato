@@ -2,7 +2,7 @@
 % Please edit documentation in R/income_lato.R
 \name{income_lato}
 \alias{income_lato}
-\title{Aplica o modelo de renda v1.5 a microdados do Latinobarometro (atalho)}
+\title{Apply the v1.5 income model to Latinobarometro microdata (shortcut)}
 \usage{
 income_lato(
   raw_dir,
@@ -13,56 +13,61 @@ income_lato(
 )
 }
 \arguments{
-\item{raw_dir}{caminho de um arquivo \code{.dta}/\code{.sav} de uma onda, ou de um
-diretorio com um arquivo por onda (baixados pelo usuario -- nao
-distribuidos com o pacote).}
+\item{raw_dir}{path to one wave's \code{.dta}/\code{.sav} file, or to a directory
+with one file per wave (downloaded by the user -- not distributed with
+the package).}
 
-\item{years}{vetor de anos a processar (default: todos os arquivos
-encontrados; ver \code{\link[=educ3_validated_years]{educ3_validated_years()}} para os anos com
-harmonizacao de educacao validada). Para um arquivo unico sem o ano no
-nome, informe o ano aqui.}
+\item{years}{vector of years to process (default: every file found; see
+\code{\link[=educ3_validated_years]{educ3_validated_years()}} for the years with validated education
+harmonization). For a single file without the year in its name, give
+the year here.}
 
-\item{countries}{vetor de codigos ISO3 para filtrar (default: todos
-os paises presentes no arquivo).}
+\item{countries}{vector of ISO3 codes to filter on (default: every
+country present in the file).}
 
-\item{model_version}{versao do modelo a aplicar (unica disponivel
-nesta v0.1: \code{"v1_5"}, o modelo congelado).}
+\item{model_version}{model version to apply (the only one available in
+this v0.1: \code{"v1_5"}, the frozen model).}
 
-\item{include_2024}{se \code{FALSE} (padrao), remove a onda 2024 do
-resultado -- os codigos de educacao dessa onda foram inferidos por
-ordem historica, nao confirmados por rotulo (o \code{.dta} de 2024 so e
-lido pelo readstata13, sem os rotulos de valor). Se \code{TRUE},
-mantem 2024 com um warning adicional explicando o motivo especifico
-da confianca reduzida.}
+\item{include_2024}{if \code{FALSE} (default), drops the 2024 wave from the
+result -- that wave's education codes were inferred from the historical
+order, not confirmed by labels (the 2024 \code{.dta} is only read by
+readstata13, without value labels). If \code{TRUE}, keeps 2024 with an
+additional warning explaining the specific reason for the reduced
+confidence.}
 }
 \value{
-data.frame: o banco harmonizado com \code{prob_bottom50},
-\code{prob_middle40}, \code{prob_top10}, \code{elegivel}, \code{motivo_exclusao} e as
-flags de confianca por pais ANEXADAS (nao um objeto separado
-casado por posicao). As probabilidades sao PESO CONTINUO para
-composicao/associacao -- nao classifique respondentes individuais
-por corte duro, e nao interprete \code{mean(prob_bottom50)} por
-pais-onda como o tamanho do bottom50 (a margem agregada deriva ao
-longo do tempo por razoes do proprio modelo). Um warning com esse
-aviso e emitido na primeira chamada da sessao; ver tambem
-\code{attr(resultado, "uso_recomendado")} / \code{attr(resultado, "uso_proibido")}.
+data.frame: the harmonized data with \code{prob_bottom50},
+\code{prob_middle40}, \code{prob_top10}, \code{elegivel}, \code{motivo_exclusao} and the
+per-country confidence flags APPENDED (not a separate object matched
+by position). The probabilities are continuous weights for describing
+the composition of groups (e.g., party support among the bottom 50\%),
+within a wave and across waves. Do not classify individual respondents
+by a hard cutoff, and do not read \code{mean(prob_bottom50)} by country-wave
+as the size of the bottom half, nor its change over time as a trend
+(the aggregate margin drifts for reasons internal to the model; see
+\code{veredito_deriva_temporal} and \code{flag_margin}). A warning with this
+notice is issued on the first call of the session; see also
+\code{attr(result, "recommended_use")} / \code{attr(result, "prohibited_use")}.
+\code{motivo_exclusao} codes: \code{venezuela_architectural_quarantine},
+\code{country_not_in_15}, \code{outside_country_valid_window},
+\code{missing_or_invalid_predictor}.
 }
 \description{
-Combina \code{\link[=prepare_latinobarometro_income_inputs]{prepare_latinobarometro_income_inputs()}} e
-\code{\link[=predict_latinobarometro_income]{predict_latinobarometro_income()}} num unico passo. Equivalente a:
+Combines \code{\link[=prepare_latinobarometro_income_inputs]{prepare_latinobarometro_income_inputs()}} and
+\code{\link[=predict_latinobarometro_income]{predict_latinobarometro_income()}} in a single step. Equivalent to:
 \code{predict_latinobarometro_income(prepare_latinobarometro_income_inputs(raw_dir, years, countries), model_version, include_2024)},
-mais um resumo da execucao emitido com \code{message()} ao final: ondas
-detectadas, ondas excluidas por padrao (2024), ondas ignoradas por falha
-de leitura, e paises sem nenhuma predicao com o motivo.
+plus a run summary emitted with \code{message()} at the end: waves detected,
+waves excluded by default (2024), waves skipped because they could not be
+read, and countries with no prediction at all, with the reason.
 }
 \details{
-O pacote NAO distribui microdados do Latinobarometro -- \code{raw_dir} deve
-apontar para arquivos baixados pelo usuario da fonte oficial
+The package does NOT distribute Latinobarometro microdata -- \code{raw_dir}
+must point to files the user downloaded from the official source
 (latinobarometro.org).
 }
 \examples{
-# Uma onda, arquivo unico. Dado 100\% sintetico gravado como .dta
-# temporario -- nenhum respondente real do Latinobarometro.
+# One wave, single file. 100\% synthetic data written as a temporary
+# .dta -- no real Latinobarometro respondent.
 sim <- simulate_latinobarometro_wave(2011, n = 20)
 arquivo <- file.path(tempdir(), "Latinobarometro_2011_sim.dta")
 haven::write_dta(sim, arquivo)
@@ -71,7 +76,7 @@ head(res[, c("iso3", "prob_bottom50", "motivo_exclusao")])
 unlink(arquivo)
 
 \dontrun{
-# uso real, com microdados baixados pelo usuario:
+# real use, with microdata downloaded by the user:
 res2018 <- income_lato("~/downloads/Latinobarometro_2018_Eng_Stata_v20190303.dta")
 todas <- income_lato("~/downloads/latinobarometro_dtas")
 }

@@ -23,21 +23,24 @@ another, and this vignette is about telling the two apart.
 Use `prob_bottom50` as a continuous weight to describe groups. The question
 "what share of the poorest half of Brazilians supported party X in 2018?" is
 answered by a weighted mean of the party indicator, with weight
-`prob_bottom50 * survey_weight`. Validated against LAPOP, this kind of
-aggregate recovers the observed shares closely:
+`prob_bottom50 * survey_weight`. In LAPOP, which records household income,
+the same shares can be computed twice, weighting respondents once by their
+observed income group and once by the predicted probabilities. The two
+agree closely:
 
-- Spearman correlation between predicted and observed shares of 0.97–0.99
-  across the three income groups (339 country-wave-party comparisons,
-  per-class validation under model v1.4);
-- under the current model v1.5, a mean absolute error of 0.670 percentage
-  points in the bottom-50 support share, with the most-supported party
-  matching in 97% of 357 comparisons across 15 countries.
+- Spearman correlation of 0.97–0.99 between the two sets of shares, across
+  the three income groups (339 country-wave-party comparisons, model v1.4);
+- under the current model v1.5, a mean absolute difference of 0.670
+  percentage points in the bottom-50 support share (357 country-wave-party
+  comparisons, 15 countries), with the party most supported by the bottom
+  50% the same in 97% of 66 country-waves.
 
 ## Bad use: classifying individuals
 
 At the level of one respondent the model is weak: Spearman correlations of
 0.21–0.42 between a person's predicted probability and their observed
-position (92,940 LAPOP respondents, validation under v1.4). Five predictors
+income group, taken from the household income bracket they report to LAPOP
+(92,940 respondents, 14 countries, 2008–2023, validation under v1.4). Five predictors
 (sex, age, education, car and washing machine ownership) cannot place an
 individual reliably. So:
 
@@ -46,11 +49,17 @@ individual reliably. So:
 - do not use the probabilities as an individual-level covariate whose
   coefficient you interpret as the effect of income.
 
-## Also not: the size of the bottom 50% over time
+## Comparing waves: yes. The size of the bottom 50% over time: no
 
-`mean(prob_bottom50)` per country-wave is not an estimate of how large the
-bottom half is, and its movement over time is not a trend. The aggregate
-margin drifts for reasons internal to the model. The column
+Comparing groups across waves is a good use. Support for party X among the
+bottom 50% in each wave, 1995–2023, is the same weighted mean computed wave
+by wave: the probabilities describe the composition of the group in every
+wave, and those compositions can be compared.
+
+What cannot be read over time is the weight itself. `mean(prob_bottom50)`
+per country-wave is not an estimate of how large the bottom half is, and
+its change over time is not a trend: the aggregate margin drifts for
+reasons internal to the model. The column
 `veredito_deriva_temporal` reports the drift verdict per country from the
 article's validation, and `flag_margin` marks the countries where the margin
 did not validate cleanly (`NA` for Mexico, where it was never assessed).

@@ -6,14 +6,13 @@
 # em harmonize_predictors.R / harmonize_educ3.R). Nao alterada.
 # =============================================================================
 
-#' Forca o carregamento de namespaces de dependencias (uso interno)
+#' Force loading of dependency namespaces (internal use)
 #'
-#' Sem isso, o S3 dispatch de `stats::predict()` sobre um objeto
-#' `"multnet"/"glmnet"` falha ("no applicable method") -- estar listado
-#' em `Imports` no DESCRIPTION nao basta se nenhuma linha de codigo usa
-#' `@importFrom`; o NAMESPACE precisa de uma linha de import
-#' correspondente para o namespace ser carregado (achado real do
-#' `R CMD check`, Bloco 16).
+#' Without this, S3 dispatch of `stats::predict()` on a
+#' `"multnet"/"glmnet"` object fails ("no applicable method") -- being
+#' listed in `Imports` in DESCRIPTION is not enough if no line of code
+#' uses `@importFrom`; NAMESPACE needs a matching import line for the
+#' namespace to be loaded (found by `R CMD check`).
 #' @importFrom glmnet glmnet
 #' @importFrom utils read.csv packageVersion
 #' @keywords internal

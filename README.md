@@ -8,7 +8,6 @@ the middle 40% and the top 10% of their country in that survey year. It applies
 a frozen, already-validated model (v1.5, 15 countries, waves 1995–2024) to
 Latinobarómetro microdata that you download yourself.
 
-> Function documentation and console messages are currently in Portuguese.
 > Source, issues and documentation site: <https://github.com/mrbpedro/incomeLato>
 > · <https://mrbpedro.github.io/incomeLato>.
 
@@ -34,18 +33,17 @@ res <- income_lato("~/data/Latinobarometro_2018_Eng_Stata_v20190303.dta")
 The function ends with a short report:
 
 ```
-incomeLato -- resumo da execucao
-  ondas detectadas: 2018
-  ondas excluidas por padrao: nenhuma
-  respondentes com predicao: 16901 de 20204
-  paises sem predicao:
-    DOM: pais_fora_dos_15_ativos
-    GTM: pais_fora_dos_15_ativos
-    VEN: venezuela_quarentena_arquitetural
+incomeLato -- run summary
+  waves detected: 2018
+  waves excluded by default: none
+  respondents with a prediction: 16901 of 20204
+  countries with no prediction:
+    DOM: country_not_in_15
+    GTM: country_not_in_15
+    VEN: venezuela_architectural_quarantine
 ```
 
-(waves detected, waves excluded by default, respondents scored, and countries
-with no prediction and why). On the real 2018 file this call reproduces the
+On the real 2018 file this call reproduces the
 article's 16,901 predictions for that wave exactly.
 
 If the file name does not contain the year, give it: `income_lato(file,
@@ -71,28 +69,78 @@ before predicting, run the two steps separately:
 
 Respondents from countries outside the 15 get empty probabilities and a
 reason, never an error. Venezuela is always excluded (an architectural
-quarantine of the model, reported as `venezuela_quarentena_arquitetural`).
+quarantine of the model). The codes in `motivo_exclusao` are:
+
+| Code | Meaning |
+|---|---|
+| `venezuela_architectural_quarantine` | respondent from Venezuela, always excluded |
+| `country_not_in_15` | country outside the 15 covered by the model |
+| `outside_country_valid_window` | country-wave outside that country's valid window |
+| `missing_or_invalid_predictor` | sex, age, education, car or washing machine missing or invalid |
+
+`NA` means the respondent was scored. These codes replaced the Portuguese
+ones of v0.1.0 (`venezuela_quarentena_arquitetural`,
+`pais_fora_dos_15_ativos`, `fora_da_janela_temporal_valida_do_pais`,
+`preditor_ausente_ou_invalido`, in the same order).
 
 ## Scope and limits: strong in aggregate, weak for individuals
 
-The two uses of the probabilities perform very differently, and the package
-is built for the first one.
+The model was validated against LAPOP in two ways. The first tests what the
+model predicts, income position; the second tests the use the package is
+built for.
 
-| Use | Validation (against LAPOP) | Result |
+### Against observed income
+
+LAPOP asks respondents their household income bracket (the `q10` family of
+questions). Within each country-wave, each bracket is converted into
+membership in the bottom 50%, middle 40% and top 10%, and the model's
+probabilities are compared with that observed membership, respondent by
+respondent.
+
+| Metric | Model | Result |
 |---|---|---|
-| **Aggregate**: share of each income group supporting a party, per country-wave | Spearman between predicted and observed shares, per-class validation **under v1.4** | 0.97–0.99 (339 comparisons) |
-| **Aggregate**, same metric **under v1.5**, 15 countries | mean absolute error of the bottom-50 support share | 0.670 pp; the most-supported party matches in 97% of 357 comparisons |
-| **Individual**: one respondent's probability vs. their observed position | Spearman, per-class validation **under v1.4** | 0.21–0.42 (N = 92,940) |
+| Spearman between the respondent's predicted class probability and their observed income-class membership; 14 countries, 2008–2023 | v1.4 | 0.21 (middle 40) to 0.42 (bottom 50); N = 92,940 |
 
-So: use `prob_bottom50` as a continuous weight in aggregate analysis (for
-example, a weighted mean or a weighted regression). Do not classify
-individual respondents by thresholding it, and do not read
-`mean(prob_bottom50)` per country-wave as the size of the bottom 50% — the
-aggregate margin drifts over time for reasons internal to the model. The
-package warns about this on first use in each session.
+At the level of one respondent, the model is weak.
 
-The per-class validation has not yet been redone under v1.5; it is the first
-open issue, planned for v0.1.1.
+### In use: the income composition of party support
+
+Here LAPOP vote intention is held fixed and only the income weights change.
+Support for each party within each income group is computed twice, once
+weighting respondents by their observed income-class membership and once by
+the predicted probabilities, and the two results are compared. Each
+comparison is one country-wave-party.
+
+| Metric | Model | Result |
+|---|---|---|
+| Spearman between the support shares computed with predicted and with observed income weights, per income group | v1.4 | 0.97 (top 10) to 0.99 (bottom 50, middle 40); 339 comparisons |
+| Mean absolute difference in the bottom 50's support share; 15 countries, 2008–2018 | v1.5 | 0.670 pp over 357 comparisons |
+| Party most supported by the bottom 50% is the same under both weights | v1.5 | 97% of 66 country-waves |
+
+In aggregate, the model reproduces what observed income would give.
+
+So `prob_bottom50`, `prob_middle40` and `prob_top10` are continuous weights
+for describing the composition of groups, within a wave and across waves
+(through a weighted mean or a weighted regression).
+
+- **Allowed**, including over time: support for party X among the bottom
+  50% in each wave, 1995–2023, weighting each respondent by
+  `prob_bottom50` times the survey weight.
+- **Not allowed**: classifying individual respondents by a hard cutoff
+  (`prob_bottom50 > 0.5` → "poor").
+- **Not allowed**: reading `mean(prob_bottom50)` by country-wave as the size
+  of the bottom half, or its change over time as a trend. The aggregate
+  margin drifts for reasons internal to the model; the columns
+  `veredito_deriva_temporal` and `flag_margin` give the per-country drift
+  verdict.
+
+The package issues this notice as a warning on first use in each session,
+and records it in `attr(res, "recommended_use")` and
+`attr(res, "prohibited_use")`.
+
+The validation against observed income and the per-group Spearman of party
+support are still the ones run under model v1.4; redoing them under v1.5 is
+the first open issue.
 
 ## Why v1.5 model with v1.4 recalibrators
 

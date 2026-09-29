@@ -2,7 +2,7 @@
 % Please edit documentation in R/predict_income.R
 \name{predict_latinobarometro_income}
 \alias{predict_latinobarometro_income}
-\title{Aplica o modelo de renda v1.5 ao banco preparado}
+\title{Apply the v1.5 income model to the prepared data}
 \usage{
 predict_latinobarometro_income(
   data,
@@ -11,36 +11,40 @@ predict_latinobarometro_income(
 )
 }
 \arguments{
-\item{data}{data.frame retornado por \code{\link[=prepare_latinobarometro_income_inputs]{prepare_latinobarometro_income_inputs()}}.}
+\item{data}{data.frame returned by \code{\link[=prepare_latinobarometro_income_inputs]{prepare_latinobarometro_income_inputs()}}.}
 
-\item{model_version}{por enquanto so \code{"v1_5"} (o modelo congelado).}
+\item{model_version}{for now only \code{"v1_5"} (the frozen model).}
 
-\item{include_2024}{se FALSE (padrao), remove a onda 2024 do resultado
-(problema de leitura/encoding conhecido). Se TRUE, mantem com um
-warning forte adicional.}
+\item{include_2024}{if FALSE (default), drops the 2024 wave from the
+result (its education codes were inferred, not confirmed by labels).
+If TRUE, keeps it with an additional strong warning.}
 }
 \value{
-\code{data} com as colunas anexadas: \code{prob_bottom50},
+\code{data} with the appended columns: \code{prob_bottom50},
 \code{prob_middle40}, \code{prob_top10}, \code{elegivel}, \code{motivo_exclusao},
 \code{confianca_alvo_treino}, \code{flag_tier_reduzido}, \code{flag_piso_confianca},
-\code{flag_fonte_censitaria}, \code{veredito_deriva_temporal}. Atributos
-\code{uso_recomendado}/\code{uso_proibido} anexados ao objeto.
+\code{flag_fonte_censitaria}, \code{veredito_deriva_temporal}, \code{flag_margin}.
+Attributes \code{recommended_use}/\code{prohibited_use} attached to the object.
+\code{motivo_exclusao} codes: \code{venezuela_architectural_quarantine},
+\code{country_not_in_15}, \code{outside_country_valid_window},
+\code{missing_or_invalid_predictor}.
 }
 \description{
-Aplica o modelo de renda v1.5 ao banco preparado
+Apply the v1.5 income model to the prepared data
 }
 \note{
-As probabilidades sao PESO CONTINUO para uso em
-composicao/associacao (ex. media ponderada numa regressao). NAO
-classifique respondentes individuais em bottom50/middle40/top10 por
-corte duro. NAO interprete \code{mean(prob_bottom50)} por pais-onda como
-o TAMANHO do bottom50 naquele pais-onda -- a margem agregada
-deriva ao longo do tempo por razoes do proprio modelo, nao e uma
-serie temporal substantiva valida. Um warning com este aviso e
-emitido na primeira chamada da sessao.
+The probabilities are continuous weights for describing the
+composition of groups (e.g., party support among the bottom 50\%),
+within a wave and across waves. Do NOT classify individual respondents
+into bottom50/middle40/top10 by hard cutoff. Do NOT read
+\code{mean(prob_bottom50)} by country-wave as the size of the bottom half,
+nor its change over time as a trend: the aggregate margin drifts for
+reasons internal to the model (see \code{veredito_deriva_temporal} and
+\code{flag_margin}). A warning with this notice is issued on the first
+call of the session.
 }
 \examples{
-# dado 100\% sintetico -- nenhum valor de respondente real
+# 100\% synthetic data -- no real respondent value
 sim <- simulate_latinobarometro_wave(2018, n = 30)
 core <- harmonize_core_predictors(sim, 2018)
 educ <- harmonize_educ3_latinobarometro(sim, 2018)

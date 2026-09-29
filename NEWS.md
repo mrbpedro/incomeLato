@@ -1,3 +1,40 @@
+# incomeLato 0.1.1
+
+All console messages, warnings and function help are now in English.
+Exclusion reason codes renamed (see README). No change to predictions.
+
+* `motivo_exclusao` codes: `venezuela_quarentena_arquitetural` →
+  `venezuela_architectural_quarantine`, `pais_fora_dos_15_ativos` →
+  `country_not_in_15`, `fora_da_janela_temporal_valida_do_pais` →
+  `outside_country_valid_window`, `preditor_ausente_ou_invalido` →
+  `missing_or_invalid_predictor`. Code that filters on the old values must
+  be updated.
+* Result attributes `uso_recomendado` / `uso_proibido` renamed
+  `recommended_use` / `prohibited_use`, with English values.
+* The usage notice (warning, README, vignette) now separates what is allowed
+  from what is not: comparing groups across waves is allowed (e.g. party
+  support among the bottom 50% in each wave); reading `mean(prob_bottom50)`
+  as the size of the bottom half, or its change as a trend, is not.
+* Column names are unchanged, including `veredito_deriva_temporal` and
+  `flag_margin`, so existing code keeps working. Moving column names to
+  English is left for a future version, with a deprecation warning.
+* Validation, description corrected (numbers unchanged). The README and the
+  vignette now separate the validation against LAPOP observed income (the
+  household income bracket, compared respondent by respondent) from the
+  validation in use (party support computed with observed vs. predicted
+  income weights). Two descriptions in 0.1.0 were wrong: the 339 v1.4
+  comparisons are country-wave-party, not country-wave; and the 97% top-party
+  agreement under v1.5 is over 66 country-waves, not over the 357
+  country-wave-party comparisons.
+* Checked against v0.1.0 on the real 2018 wave: 16,901 of 16,901
+  predictions identical (maximum difference 0).
+
+## Known limitations
+
+* The validation against observed income and the per-group Spearman of
+  party support are still the ones run under model v1.4; redoing them under
+  v1.5 remains the first open issue.
+
 # incomeLato 0.1.0
 
 First public release.
@@ -27,8 +64,6 @@ Archived on Zenodo: DOI 10.5281/zenodo.23045517 (this version);
   README is still the one run under model v1.4; redoing it under v1.5 is
   planned for v0.1.1. The aggregate party-support validation is already
   under v1.5.
-* Console messages and function help are in Portuguese; README, NEWS and
-  the vignette are in English.
 
 ## Validation
 

@@ -44,39 +44,39 @@
   )
 }
 
-#' Harmoniza educ3_final para uma onda do Latinobarometro
+#' Harmonize educ3_final for one Latinobarometro wave
 #'
-#' Constroi a variavel de escolaridade em 3 categorias
-#' (basic_or_less/secondary/higher_or_more) usada pelo modelo de renda,
-#' consultando a tabela de anos validados (nao o crosswalk geral --
-#' ver nota no cabecalho do arquivo). Anos fora da tabela de anos
-#' validados NAO sao processados -- a funcao para com erro, nunca
-#' adivinha esquema/variavel para uma onda nao vista.
+#' Builds the 3-category education variable
+#' (basic_or_less/secondary/higher_or_more) used by the income model,
+#' using the table of validated years (not the general crosswalk -- see
+#' the note in the file header). Years outside the table of validated
+#' years are NOT processed -- the function stops with an error and never
+#' guesses the scheme/variable for an unseen wave.
 #'
-#' @param raw_data data.frame bruto de uma onda do Latinobarometro
-#'   (colunas com os nomes originais do arquivo baixado pelo usuario).
-#' @param year ano da onda (numeric).
-#' @param on_unvalidated_year "error" (padrao, recusa) ou "warning"
-#'   (emite aviso forte e retorna NA para toda a coluna -- usar com
-#'   cautela, nunca em producao sem revisao manual).
-#' @return data.frame com 1 linha por respondente: `educ3_final`,
+#' @param raw_data raw data.frame of one Latinobarometro wave (columns
+#'   with the original names of the file downloaded by the user).
+#' @param year survey year of the wave (numeric).
+#' @param on_unvalidated_year "error" (default, refuses) or "warning"
+#'   (issues a strong warning and returns NA for the whole column -- use
+#'   with caution, never in production without manual review).
+#' @return data.frame with 1 row per respondent: `educ3_final`,
 #'   `educ3_source_variable`, `educ3_source_scheme`, `educ3_quality_flag`.
-#' @details A onda 2024 tem confianca reduzida -- `readstata13` nao
-#'   recuperou os rotulos de valor deste arquivo especificamente, entao
-#'   os codigos foram inferidos por ordem historica identica confirmada
-#'   em 9 outras ondas, nao por confirmacao direta de rotulo. Use com
-#'   cautela quando `educ3_quality_flag` vier
+#' @details The 2024 wave has reduced confidence -- `readstata13` did not
+#'   recover the value labels of this particular file, so the codes were
+#'   inferred from the identical historical order confirmed in 9 other
+#'   waves, not by direct confirmation from labels. Use with caution when
+#'   `educ3_quality_flag` is
 #'   `"confianca_reduzida_2024_codigos_inferidos"`.
 #' @examples
-#' # dado 100% sintetico -- nenhum valor de respondente real
+#' # 100% synthetic data -- no real respondent value
 #' sim <- simulate_latinobarometro_wave(2018, n = 50)
 #' educ <- harmonize_educ3_latinobarometro(sim, 2018)
 #' table(educ$educ3_final, useNA = "ifany")
 #'
-#' # ano fora da tabela de anos validados -- recusa, nao adivinha
+#' # year outside the table of validated years -- refuses, does not guess
 #' tryCatch(
 #'   harmonize_educ3_latinobarometro(sim, 2099),
-#'   error = function(e) message("Recusado como esperado: ", conditionMessage(e))
+#'   error = function(e) message("Refused as expected: ", conditionMessage(e))
 #' )
 #' @export
 harmonize_educ3_latinobarometro <- function(raw_data, year, on_unvalidated_year = c("error", "warning")) {
@@ -86,10 +86,10 @@ harmonize_educ3_latinobarometro <- function(raw_data, year, on_unvalidated_year 
 
   if (nrow(linha) == 0) {
     msg <- paste0(
-      "educ3_final NAO tem logica validada para o ano ", year, ". ",
-      "Anos validados: ", paste(sort(anos_validados$year), collapse = ", "), ". ",
-      "Uma onda nova exige atualizar inst/extdata/educ3_validated_years.csv manualmente ",
-      "(ver docs do pacote) -- nao ha deteccao automatica de variavel de escolaridade."
+      "educ3_final has NO validated logic for year ", year, ". ",
+      "Validated years: ", paste(sort(anos_validados$year), collapse = ", "), ". ",
+      "A new wave requires updating inst/extdata/educ3_validated_years.csv manually ",
+      "(see the package docs) -- there is no automatic detection of the education variable."
     )
     if (on_unvalidated_year == "error") stop(msg, call. = FALSE)
     warning(msg, call. = FALSE)
@@ -106,7 +106,7 @@ harmonize_educ3_latinobarometro <- function(raw_data, year, on_unvalidated_year 
     vars <- strsplit(linha$raw_variable_name[1], ";")[[1]]
     var_cat <- vars[1]; var_years <- vars[2]
     if (!var_cat %in% names(raw_data) || !var_years %in% names(raw_data)) {
-      stop("Colunas esperadas para 2024 (", var_cat, ", ", var_years, ") nao encontradas em raw_data.", call. = FALSE)
+      stop("Columns expected for 2024 (", var_cat, ", ", var_years, ") not found in raw_data.", call. = FALSE)
     }
     codigo_cat <- suppressWarnings(as.numeric(raw_data[[var_cat]])); codigo_cat[codigo_cat < 0] <- NA
     codigo_years <- suppressWarnings(as.numeric(raw_data[[var_years]])); codigo_years[codigo_years < 0] <- NA
@@ -118,13 +118,13 @@ harmonize_educ3_latinobarometro <- function(raw_data, year, on_unvalidated_year 
   } else {
     var <- linha$raw_variable_name[1]
     if (!var %in% names(raw_data)) {
-      stop("Coluna esperada '", var, "' (educacao, ano ", year, ") nao encontrada em raw_data. ",
-           "Confira se o arquivo baixado corresponde a onda ", year, " do Latinobarometro.", call. = FALSE)
+      stop("Expected column '", var, "' (education, year ", year, ") not found in raw_data. ",
+           "Check that the downloaded file is the Latinobarometro ", year, " wave.", call. = FALSE)
     }
     codigo <- suppressWarnings(as.numeric(raw_data[[var]])); codigo[codigo < 0] <- NA
     educ3_final <- switch(scheme,
       cat7 = .mapear_cat7(codigo), cat3 = .mapear_cat3(codigo), years17 = .mapear_years17(codigo),
-      stop("Esquema desconhecido: ", scheme, call. = FALSE))
+      stop("Unknown scheme: ", scheme, call. = FALSE))
     fonte <- var
     flag <- "validado"
   }
@@ -133,8 +133,8 @@ harmonize_educ3_latinobarometro <- function(raw_data, year, on_unvalidated_year 
   # (bug real de 2023 -- REEDUC_3/S21B sao do chefe; S11 e do respondente, ja garantido
   # pela tabela de anos validados, mas o check fica aqui como defesa em profundidade)
   if (year == 2023 && fonte %in% c("REEDUC_3", "S21B")) {
-    stop("BLOQUEADO: variavel de educacao do CHEFE DE FAMILIA (", fonte, ") nao pode ser usada ",
-         "como educacao do respondente (bug conhecido de 2023). Use S11.", call. = FALSE)
+    stop("BLOCKED: HEAD OF HOUSEHOLD education variable (", fonte, ") cannot be used ",
+         "as the respondent's education (known 2023 bug). Use S11.", call. = FALSE)
   }
 
   data.frame(
@@ -146,18 +146,17 @@ harmonize_educ3_latinobarometro <- function(raw_data, year, on_unvalidated_year 
   )
 }
 
-#' Lista os anos com logica de educacao validada
+#' List the years with validated education logic
 #'
-#' Anos fora desta tabela nao sao processados por
-#' [harmonize_educ3_latinobarometro()] -- a funcao recusa em vez de
-#' adivinhar esquema/variavel para uma onda nao vista. Adicionar uma
-#' onda nova exige atualizar `inst/extdata/educ3_validated_years.csv`
-#' manualmente (ver README do pacote).
+#' Years outside this table are not processed by
+#' [harmonize_educ3_latinobarometro()] -- the function refuses instead of
+#' guessing the scheme/variable for an unseen wave. Adding a new wave
+#' requires updating `inst/extdata/educ3_validated_years.csv` manually
+#' (see the package README).
 #'
-#' @return data.frame com `year`, `raw_variable_name`, `scheme`,
-#'   `respondent_or_head`, `confidence_note` -- uma linha por onda
-#'   validada (1995-2024; 2024 com confianca reduzida, ver
-#'   `confidence_note`).
+#' @return data.frame with `year`, `raw_variable_name`, `scheme`,
+#'   `respondent_or_head`, `confidence_note` -- one row per validated wave
+#'   (1995-2024; 2024 with reduced confidence, see `confidence_note`).
 #' @examples
 #' anos <- educ3_validated_years()
 #' anos[, c("year", "scheme", "confidence_note")]

@@ -11,7 +11,7 @@
 
 test_that("harmonize_educ3_latinobarometro recusa ano nao validado", {
   sim <- simulate_latinobarometro_wave(2018, n = 10)
-  expect_error(harmonize_educ3_latinobarometro(sim, 2099), "NAO tem logica validada")
+  expect_error(harmonize_educ3_latinobarometro(sim, 2099), "has NO validated logic")
 })
 
 test_that("harmonize_educ3_latinobarometro produz as 3 categorias esperadas", {
@@ -38,7 +38,7 @@ test_that("prepare + predict rodam ponta a ponta sobre dado sintetico sem erro",
   expect_equal(nrow(resultado), nrow(banco))
   # Venezuela deve estar sempre bloqueada
   expect_true(all(is.na(resultado$prob_bottom50[resultado$iso3 == "VEN"])))
-  expect_true(all(resultado$motivo_exclusao[resultado$iso3 == "VEN"] == "venezuela_quarentena_arquitetural"))
+  expect_true(all(resultado$motivo_exclusao[resultado$iso3 == "VEN"] == "venezuela_architectural_quarantine"))
   # probabilidades devem somar 1 onde elegivel
   elig <- !is.na(resultado$prob_bottom50)
   if (any(elig)) {
@@ -61,7 +61,7 @@ test_that("harmonize_core_predictors falha informativamente quando a coluna vem 
   cw <- read.csv(system.file("extdata", "lb_income_predictor_crosswalk.csv", package = "incomeLato"), stringsAsFactors = FALSE)
   col_sex <- cw$raw_variable_name[cw$year == 2011 & cw$harmonized_concept == "sex"]
   sim[[col_sex]] <- factor(ifelse(sim[[col_sex]] == 1, "Man", "Woman"))
-  expect_error(harmonize_core_predictors(sim, 2011), "veio como factor")
+  expect_error(harmonize_core_predictors(sim, 2011), "came as a factor")
 })
 
 test_that("prepare_latinobarometro_income_inputs ignora uma onda que falha e mantem as demais", {
@@ -93,7 +93,7 @@ test_that("prepare_latinobarometro_income_inputs ignora uma onda que falha e man
 
   expect_warning(
     banco <- prepare_latinobarometro_income_inputs(tmp_dir, years = c(2011, 2013)),
-    "IGNORADA"
+    "SKIPPED"
   )
   expect_true(all(banco$year == 2011))
   unlink(tmp_dir, recursive = TRUE)

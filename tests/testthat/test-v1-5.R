@@ -40,7 +40,7 @@ test_that("modelo carregado tem o estatuto corrigido em memoria e os 15 paises",
   expect_identical(modelo$release_status, "promoted_primary")
   expect_identical(modelo$countries, PAISES_ATIVOS)
   expect_length(PAISES_ATIVOS, 15)
-  expect_error(.carregar_modelo("v1_4"), "Unica versao")
+  expect_error(.carregar_modelo("v1_4"), "Only version shipped")
 })
 
 test_that("prepare_latinobarometro_income_inputs le .sav", {
@@ -58,5 +58,16 @@ test_that("duas copias da mesma onda no diretorio geram erro", {
   on.exit(unlink(tmp_dir, recursive = TRUE))
   file.create(file.path(tmp_dir, "Latinobarometro_2011_a.dta"))
   file.create(file.path(tmp_dir, "Latinobarometro_2011_b.sav"))
-  expect_error(prepare_latinobarometro_income_inputs(tmp_dir, years = 2011), "Mais de um arquivo")
+  expect_error(prepare_latinobarometro_income_inputs(tmp_dir, years = 2011), "More than one file for wave")
+})
+
+test_that("atributos de uso e codigos de exclusao estao em ingles (v0.1.1)", {
+  res <- suppressWarnings(predict_latinobarometro_income(banco_sintetico(2018, n = 10)))
+  expect_false(is.null(attr(res, "recommended_use")))
+  expect_false(is.null(attr(res, "prohibited_use")))
+  expect_null(attr(res, "uso_recomendado"))
+  expect_null(attr(res, "uso_proibido"))
+  expect_true(all(res$motivo_exclusao[res$iso3 == "GTM"] == "country_not_in_15"))
+  expect_true(all(stats::na.omit(res$motivo_exclusao) %in% c("venezuela_architectural_quarantine", "country_not_in_15",
+                                                            "outside_country_valid_window", "missing_or_invalid_predictor")))
 })

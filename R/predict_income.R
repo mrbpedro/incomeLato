@@ -9,10 +9,10 @@
 
 #' @keywords internal
 .carregar_modelo <- function(model_version) {
-  if (model_version != "v1_5") stop("Unica versao empacotada nesta v0.1: 'v1_5'.", call. = FALSE)
+  if (model_version != "v1_5") stop("Only version shipped in this v0.1: 'v1_5'.", call. = FALSE)
   modelo <- readRDS(system.file("model", "modelo_income_quantile_v1_5.rds", package = "incomeLato"))
   if (!identical(modelo$countries, PAISES_ATIVOS)) {
-    stop("Paises do modelo empacotado divergem de PAISES_ATIVOS -- pacote inconsistente.", call. = FALSE)
+    stop("Countries in the shipped model differ from PAISES_ATIVOS -- inconsistent package.", call. = FALSE)
   }
   # O .rds e byte-identico ao artefato promovido (SHA-256 c935cb87...), que
   # carrega metadado interno gravado antes da promocao de 2026-07-13
@@ -43,40 +43,45 @@
 .emitir_aviso_de_uso <- function() {
   if (!isTRUE(.aviso_de_uso_emitido$emitido)) {
     warning(
-      "USO: prob_bottom50/middle40/top10 sao PESO CONTINUO para composicao/associacao ",
-      "(ex.: media ponderada por prob_bottom50 numa regressao). NAO classifique respondentes ",
-      "individuais em bottom50/middle40/top10 por corte duro, e NAO interprete mean(prob_bottom50) ",
-      "por pais-onda como o TAMANHO do bottom50 naquele pais-onda -- a margem agregada deriva ao ",
-      "longo do tempo por razoes do proprio modelo, nao e uma serie temporal substantiva valida. ",
-      "Ver attr(resultado, 'uso_recomendado') / attr(resultado, 'uso_proibido').",
+      "USE: prob_bottom50, prob_middle40 and prob_top10 are continuous weights for describing the ",
+      "composition of groups (e.g., party support among the bottom 50%) within a wave and across waves. ",
+      "DO NOT classify individual respondents by hard cutoff. DO NOT read mean(prob_bottom50) by ",
+      "country-wave as the size of the bottom half, nor its change over time as a trend: the aggregate ",
+      "margin drifts for reasons internal to the model. See attr(result, 'recommended_use') and ",
+      "attr(result, 'prohibited_use'), and the columns veredito_deriva_temporal and flag_margin for the ",
+      "per-country drift verdict.",
       call. = FALSE
     )
     .aviso_de_uso_emitido$emitido <- TRUE
   }
 }
 
-#' Aplica o modelo de renda v1.5 ao banco preparado
+#' Apply the v1.5 income model to the prepared data
 #'
-#' @param data data.frame retornado por [prepare_latinobarometro_income_inputs()].
-#' @param model_version por enquanto so `"v1_5"` (o modelo congelado).
-#' @param include_2024 se FALSE (padrao), remove a onda 2024 do resultado
-#'   (problema de leitura/encoding conhecido). Se TRUE, mantem com um
-#'   warning forte adicional.
-#' @return `data` com as colunas anexadas: `prob_bottom50`,
+#' @param data data.frame returned by [prepare_latinobarometro_income_inputs()].
+#' @param model_version for now only `"v1_5"` (the frozen model).
+#' @param include_2024 if FALSE (default), drops the 2024 wave from the
+#'   result (its education codes were inferred, not confirmed by labels).
+#'   If TRUE, keeps it with an additional strong warning.
+#' @return `data` with the appended columns: `prob_bottom50`,
 #'   `prob_middle40`, `prob_top10`, `elegivel`, `motivo_exclusao`,
 #'   `confianca_alvo_treino`, `flag_tier_reduzido`, `flag_piso_confianca`,
-#'   `flag_fonte_censitaria`, `veredito_deriva_temporal`. Atributos
-#'   `uso_recomendado`/`uso_proibido` anexados ao objeto.
-#' @note As probabilidades sao PESO CONTINUO para uso em
-#'   composicao/associacao (ex. media ponderada numa regressao). NAO
-#'   classifique respondentes individuais em bottom50/middle40/top10 por
-#'   corte duro. NAO interprete `mean(prob_bottom50)` por pais-onda como
-#'   o TAMANHO do bottom50 naquele pais-onda -- a margem agregada
-#'   deriva ao longo do tempo por razoes do proprio modelo, nao e uma
-#'   serie temporal substantiva valida. Um warning com este aviso e
-#'   emitido na primeira chamada da sessao.
+#'   `flag_fonte_censitaria`, `veredito_deriva_temporal`, `flag_margin`.
+#'   Attributes `recommended_use`/`prohibited_use` attached to the object.
+#'   `motivo_exclusao` codes: `venezuela_architectural_quarantine`,
+#'   `country_not_in_15`, `outside_country_valid_window`,
+#'   `missing_or_invalid_predictor`.
+#' @note The probabilities are continuous weights for describing the
+#'   composition of groups (e.g., party support among the bottom 50%),
+#'   within a wave and across waves. Do NOT classify individual respondents
+#'   into bottom50/middle40/top10 by hard cutoff. Do NOT read
+#'   `mean(prob_bottom50)` by country-wave as the size of the bottom half,
+#'   nor its change over time as a trend: the aggregate margin drifts for
+#'   reasons internal to the model (see `veredito_deriva_temporal` and
+#'   `flag_margin`). A warning with this notice is issued on the first
+#'   call of the session.
 #' @examples
-#' # dado 100% sintetico -- nenhum valor de respondente real
+#' # 100% synthetic data -- no real respondent value
 #' sim <- simulate_latinobarometro_wave(2018, n = 30)
 #' core <- harmonize_core_predictors(sim, 2018)
 #' educ <- harmonize_educ3_latinobarometro(sim, 2018)
@@ -94,7 +99,7 @@
 predict_latinobarometro_income <- function(data, model_version = "v1_5", include_2024 = FALSE) {
   req <- c("year", "iso3", "sexo_final", "idade_final", "educ3_final", "owns_car", "owns_washing_machine")
   faltando <- setdiff(req, names(data))
-  if (length(faltando) > 0) stop("Colunas ausentes em `data` (esperado de prepare_latinobarometro_income_inputs()): ",
+  if (length(faltando) > 0) stop("Missing columns in `data` (expected from prepare_latinobarometro_income_inputs()): ",
                                   paste(faltando, collapse = ", "), call. = FALSE)
 
   modelo <- .carregar_modelo(model_version)
@@ -109,10 +114,10 @@ predict_latinobarometro_income <- function(data, model_version = "v1_5", include
   if (any(d$year == 2024)) {
     if (!include_2024) {
       d <- d[d$year != 2024, ]
-      message("Onda 2024 removida por padrao (include_2024=FALSE) -- codigos de educacao inferidos, nao confirmados por rotulo.")
+      message("2024 wave dropped by default (include_2024=FALSE) -- education codes inferred, not confirmed by labels.")
     } else {
-      warning("include_2024=TRUE: onda 2024 incluida, mas os codigos de educacao dessa onda ",
-              "foram INFERIDOS (nao confirmados diretamente) -- ver educ3_validated_years(). Use com cautela.", call. = FALSE)
+      warning("include_2024=TRUE: 2024 wave included, but that wave's education codes ",
+              "were INFERRED (not directly confirmed) -- see educ3_validated_years(). Use with caution.", call. = FALSE)
     }
   }
 
@@ -130,8 +135,8 @@ predict_latinobarometro_income <- function(data, model_version = "v1_5", include
     d$veredito_deriva_temporal <- character(0); d$flag_margin <- logical(0)
     d$obs_id_temp <- NULL
     .emitir_aviso_de_uso()
-    attr(d, "uso_recomendado") <- "peso_continuo_para_composicao_associacao"
-    attr(d, "uso_proibido") <- "classificacao_dura_individual; margem_agregada_como_serie_temporal_ou_estimando_substantivo"
+    attr(d, "recommended_use") <- "continuous_weight_for_group_composition_within_and_across_waves"
+    attr(d, "prohibited_use") <- "individual_hard_classification; aggregate_margin_as_group_size_or_time_trend"
     attr(d, "model_version") <- model_version
     return(d)
   }
@@ -142,14 +147,14 @@ predict_latinobarometro_income <- function(data, model_version = "v1_5", include
   d$elegivel <- d$escopo == "ativo" & !fora_da_janela
 
   d$motivo_exclusao <- NA_character_
-  d$motivo_exclusao[d$escopo == "quarentena"] <- "venezuela_quarentena_arquitetural"
-  d$motivo_exclusao[d$escopo == "fora_do_escopo"] <- "pais_fora_dos_15_ativos"
-  d$motivo_exclusao[d$escopo == "ativo" & !d$elegivel] <- "fora_da_janela_temporal_valida_do_pais"
+  d$motivo_exclusao[d$escopo == "quarentena"] <- "venezuela_architectural_quarantine"
+  d$motivo_exclusao[d$escopo == "fora_do_escopo"] <- "country_not_in_15"
+  d$motivo_exclusao[d$escopo == "ativo" & !d$elegivel] <- "outside_country_valid_window"
 
   preditor_faltando <- is.na(d$sexo_final) | is.na(d$idade_final) | is.na(d$educ3_final) |
     is.na(d$owns_car) | is.na(d$owns_washing_machine) | d$idade_final >= 120
   d$elegivel[preditor_faltando] <- FALSE
-  d$motivo_exclusao[preditor_faltando & is.na(d$motivo_exclusao)] <- "preditor_ausente_ou_invalido"
+  d$motivo_exclusao[preditor_faltando & is.na(d$motivo_exclusao)] <- "missing_or_invalid_predictor"
 
   d$prob_bottom50 <- NA_real_; d$prob_middle40 <- NA_real_; d$prob_top10 <- NA_real_
   candidatos <- d[d$elegivel, ]
@@ -196,8 +201,8 @@ predict_latinobarometro_income <- function(data, model_version = "v1_5", include
 
   .emitir_aviso_de_uso()
 
-  attr(d, "uso_recomendado") <- "peso_continuo_para_composicao_associacao"
-  attr(d, "uso_proibido") <- "classificacao_dura_individual; margem_agregada_como_serie_temporal_ou_estimando_substantivo"
+  attr(d, "recommended_use") <- "continuous_weight_for_group_composition_within_and_across_waves"
+  attr(d, "prohibited_use") <- "individual_hard_classification; aggregate_margin_as_group_size_or_time_trend"
   attr(d, "model_version") <- model_version
   attr(d, "package_version") <- tryCatch(as.character(utils::packageVersion("incomeLato")), error = function(e) NA_character_)
   d

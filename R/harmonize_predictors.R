@@ -14,8 +14,8 @@
 }
 
 #' @keywords internal
-#' Reimplementacao do find_col() de Latinobarometro/R_00_utils.R -- acha,
-#' entre candidatos, a coluna presente em df (normalizando case/pontuacao).
+#' Reimplementation of find_col() from Latinobarometro/R_00_utils.R -- finds,
+#' among the candidates, the column present in df (normalizing case/punctuation).
 .find_col <- function(df, candidates) {
   candidates <- candidates[!is.na(candidates) & nzchar(candidates)]
   if (length(candidates) == 0) return(NA_character_)
@@ -29,15 +29,15 @@
   NA_character_
 }
 
-#' Harmoniza os preditores sexo/idade/carro/lavadora/pais/peso para uma onda
+#' Harmonize the sex/age/car/washing machine/country/weight predictors for one wave
 #'
-#' @param raw_data data.frame bruto de uma onda do Latinobarometro.
-#' @param year ano da onda.
-#' @return data.frame com `sexo_final`, `idade_final`, `owns_car`,
-#'   `owns_washing_machine`, `country_raw`, `weight`, e uma coluna de
-#'   flags por preditor ausente.
+#' @param raw_data raw data.frame of one Latinobarometro wave.
+#' @param year survey year of the wave.
+#' @return data.frame with `sexo_final`, `idade_final`, `owns_car`,
+#'   `owns_washing_machine`, `country_raw`, `weight`, and a column of
+#'   flags for missing predictors.
 #' @examples
-#' # dado 100% sintetico -- nenhum valor de respondente real
+#' # 100% synthetic data -- no real respondent value
 #' sim <- simulate_latinobarometro_wave(2018, n = 50)
 #' core <- harmonize_core_predictors(sim, 2018)
 #' str(core)
@@ -46,8 +46,8 @@ harmonize_core_predictors <- function(raw_data, year) {
   cw <- .crosswalk_min()
   cw_onda <- cw[cw$year == year, ]
   if (nrow(cw_onda) == 0) {
-    stop("Nenhuma entrada do crosswalk minimo para o ano ", year,
-         ". Anos cobertos: ", paste(sort(unique(cw$year)), collapse = ", "), ".", call. = FALSE)
+    stop("No entry in the minimal crosswalk for year ", year,
+         ". Years covered: ", paste(sort(unique(cw$year)), collapse = ", "), ".", call. = FALSE)
   }
 
   achar_var <- function(conceito) {
@@ -75,13 +75,13 @@ harmonize_core_predictors <- function(raw_data, year) {
     valor <- raw_data[[col]]
     if (is.factor(valor)) {
       stop(
-        "Nao foi possivel ler o preditor '", conceito, "' (coluna '", col, "', ano ", year, "): ",
-        "veio como factor com rotulos de texto (ex.: \"", as.character(valor[1]), "\"), ",
-        "nao um codigo numerico direto. as.numeric() sobre um factor extrairia a POSICAO ",
-        "do nivel, nao o codigo real -- silenciosamente errado, nao NA. Isso e um problema de ",
-        "leitura conhecido em algumas ondas (ex. 2024, onde IDENPA vem como \"[%32%] Argentina\"). ",
-        "Nao ha correcao automatica nesta versao -- extraia o codigo manualmente (ex. via regex no ",
-        "rotulo) antes de chamar harmonize_core_predictors(), ou reporte a onda como nao suportada.",
+        "Could not read predictor '", conceito, "' (column '", col, "', year ", year, "): ",
+        "it came as a factor with text labels (e.g. \"", as.character(valor[1]), "\"), ",
+        "not a direct numeric code. as.numeric() on a factor would extract the level POSITION, ",
+        "not the real code -- silently wrong, not NA. This is a known reading problem in some ",
+        "waves (e.g. 2024, where IDENPA comes as \"[%32%] Argentina\"). ",
+        "There is no automatic fix in this version -- extract the code manually (e.g. with a regex on ",
+        "the label) before calling harmonize_core_predictors(), or report the wave as unsupported.",
         call. = FALSE
       )
     }

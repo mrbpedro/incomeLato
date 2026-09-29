@@ -2,28 +2,29 @@
 % Please edit documentation in R/synthetic_data.R
 \name{simulate_latinobarometro_wave}
 \alias{simulate_latinobarometro_wave}
-\title{Gera um data.frame sintetico com a estrutura de uma onda do Latinobarometro}
+\title{Generate a synthetic data.frame with the structure of a Latinobarometro wave}
 \usage{
 simulate_latinobarometro_wave(year, n = 200, seed = 42)
 }
 \arguments{
-\item{year}{ano da onda sintetica (deve estar em \code{\link[=educ3_validated_years]{educ3_validated_years()}}
-para poder ser usado no restante do pipeline de teste).}
+\item{year}{year of the synthetic wave (must be in
+\code{\link[=educ3_validated_years]{educ3_validated_years()}} to be usable in the rest of the test
+pipeline).}
 
-\item{n}{numero de respondentes sinteticos por pais.}
+\item{n}{number of synthetic respondents per country.}
 
-\item{seed}{semente aleatoria.}
+\item{seed}{random seed.}
 }
 \value{
-data.frame com colunas de nome IDENTICO as brutas do
-Latinobarometro para o ano escolhido (achadas via o crosswalk
-minimo e a tabela de anos validados), preenchidas com valores
-sinteticos. Atributo \code{synthetic = TRUE} anexado como marcador.
+data.frame with columns named IDENTICALLY to the raw
+Latinobarometro columns for the chosen year (found through the
+minimal crosswalk and the table of validated years), filled with
+synthetic values. Attribute \code{synthetic = TRUE} attached as a marker.
 }
 \description{
-Nenhum valor vem de um respondente real -- distribuicoes plausiveis
-sorteadas aleatoriamente, com casos de teste propositais incluidos
-(NA em carro, respondentes da Venezuela, um pais fora dos 15 ativos).
+No value comes from a real respondent -- plausible distributions drawn
+at random, with deliberate test cases included (NA in car ownership,
+respondents from Venezuela, one country outside the 15 active ones).
 }
 \examples{
 sim <- simulate_latinobarometro_wave(2018, n = 20)
