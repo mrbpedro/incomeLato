@@ -54,8 +54,11 @@ predições: v1.5 bruto difere até 0,31; v1.5 + recalibradores v1.5 difere até
 
 ## Pendências
 
-1. Validação por classe (bottom50/middle40/top10) sob v1.5 — primeira issue,
-   v0.1.1. O README cita a da v1.4, rotulada como tal.
+1. Validação da receita empacotada feita em 2026-09-29 (script 265 do
+   projeto, `docs/decisions_log_analitico.md`), dentro da amostra dos
+   recalibradores. Continua em aberto: uma medida fora da amostra
+   (leave-one-wave-out sobre a v1.5) e, com ela, refazer os vereditos do
+   `sysdata.rda`, que vêm da vintage v1.1.
 2. Repositório GitHub, tag `v0.1.0`, DOI Zenodo (substituir
    `10.5281/zenodo.XXXXXXX` em `inst/CITATION`), `packages.json` do
    r-universe, URL/BugReports no DESCRIPTION — ações do autor.

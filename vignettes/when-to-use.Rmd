@@ -20,29 +20,30 @@ another, and this vignette is about telling the two apart.
 
 ## Good use: aggregate composition
 
-Use `prob_bottom50` as a continuous weight to describe groups. The question
+Use the probabilities as continuous weights to describe groups. The question
 "what share of the poorest half of Brazilians supported party X in 2018?" is
 answered by a weighted mean of the party indicator, with weight
 `prob_bottom50 * survey_weight`. In LAPOP, which records household income,
 the same shares can be computed twice, weighting respondents once by their
-observed income group and once by the predicted probabilities. The two
-agree closely:
+observed income group and once by the predicted probabilities. With the
+packaged model, the two agree closely (357 country-wave-party comparisons,
+15 countries, 2008–2018):
 
-- Spearman correlation of 0.97–0.99 between the two sets of shares, across
-  the three income groups (339 country-wave-party comparisons, model v1.4);
-- under the current model v1.5, a mean absolute difference of 0.670
-  percentage points in the bottom-50 support share (357 country-wave-party
-  comparisons, 15 countries), with the party most supported by the bottom
-  50% the same in 97% of 66 country-waves.
+- a mean absolute difference of 0.71 percentage points in the bottom 50's
+  support share;
+- a Spearman correlation of 0.97–0.99 between the two sets of shares, across
+  the three income groups;
+- the party most supported by the bottom 50% is the same in 97% of 66
+  country-waves.
 
 ## Bad use: classifying individuals
 
-At the level of one respondent the model is weak: Spearman correlations of
-0.21–0.42 between a person's predicted probability and their observed
-income group, taken from the household income bracket they report to LAPOP
-(92,940 respondents, 14 countries, 2008–2023, validation under v1.4). Five predictors
-(sex, age, education, car and washing machine ownership) cannot place an
-individual reliably. So:
+At the level of one respondent the model is weak. The Spearman correlation
+between a person's predicted probability and their observed income group,
+taken from the household income bracket they report to LAPOP, is 0.44 for
+the bottom 50, 0.25 for the middle 40 and 0.35 for the top 10. Five
+predictors (sex, age, education, car and washing machine ownership) cannot
+place an individual reliably. So:
 
 - do not turn the probabilities into a label (`prob_bottom50 > 0.5` → "poor")
   and treat that label as observed income;
@@ -59,38 +60,81 @@ wave, and those compositions can be compared.
 What cannot be read over time is the weight itself. `mean(prob_bottom50)`
 per country-wave is not an estimate of how large the bottom half is, and
 its change over time is not a trend: the aggregate margin drifts for
-reasons internal to the model. The column
-`veredito_deriva_temporal` reports the drift verdict per country from the
-article's validation, and `flag_margin` marks the countries where the margin
-did not validate cleanly (`NA` for Mexico, where it was never assessed).
+reasons internal to the model. The column `veredito_deriva_temporal` gives a
+per-country drift label; its magnitude categories come from the
+leave-one-wave-out validation of an earlier model vintage (v1.1).
+`flag_margin` marks the countries where the margin did not validate cleanly
+(`NA` for Mexico, where it was never assessed). It remains a justified
+caution, because the direction of the drift persists under the packaged
+model.
+
+## Validation in detail
+
+The package applies the v1.5 model with the v1.4 recalibrators (Mexico
+uncalibrated). The table compares that packaged recipe with the two models
+without recalibration, against LAPOP observed income. For the recipe, the
+check is in-sample for the recalibrators, which were fitted on this same
+LAPOP data; LAPOP never enters the training of the model itself.
+
+| | Packaged recipe | v1.5, without recalibration | v1.4, without recalibration |
+|---|---|---|---|
+| Country-waves (countries) | 66 (15) | 66 (15) | 62 (14) |
+| Share of the bottom 50%, predicted minus observed: median absolute difference | 2.3 pp | 7.3 pp | 8.0 pp |
+| Same, largest absolute difference | 11.6 pp | 25.9 pp | 26.8 pp |
+| Individual Spearman, bottom 50 / middle 40 / top 10 | 0.44 / 0.25 / 0.35 | 0.42 / 0.23 / 0.35 | 0.42 / 0.21 / 0.35 |
+| Party support, mean absolute difference, bottom 50 | 0.71 pp | 0.67 pp | 0.68 pp |
+| Party support, Spearman across the three groups | 0.97–0.99 | 0.97–0.99 | 0.97–0.99 |
+| Most-supported party of the bottom 50% matches | 97% | 97% | 98% |
+
+Recalibration fixes the level of each income group. It barely changes the
+composition of party support, because support within a group is a ratio of
+weighted sums, and a shift in the level of the weights largely cancels out.
+
+Under the recipe, 11 of 15 countries have a median difference within ±1 pp;
+Ecuador (−2.1), Uruguay (−2.5) and Mexico (−2.7, no recalibrator) fall
+outside ±2 pp. Single country-waves vary more: the largest difference is
+above 2 pp in 14 of the 15 countries.
 
 ## A minimal example
 
-The package includes a generator of synthetic data with the structure of a
-Latinobarómetro wave; no real respondent is involved.
+The example follows the normal path: a wave written to a file, then
+`income_lato()`. The wave is synthetic, generated by the package; no real
+respondent is involved. `supports_democracy` is **simulated** (1 = democracy
+is preferable to any other kind of government), with a probability that
+rises with predicted income, so that the table shows a gradient.
 
 ```{r}
 library(incomeLato)
-sim <- simulate_latinobarometro_wave(2018, n = 50)
-core <- harmonize_core_predictors(sim, 2018)
-educ <- harmonize_educ3_latinobarometro(sim, 2018)
-cw <- read.csv(system.file("extdata", "country_crosswalk.csv", package = "incomeLato"))
-banco <- data.frame(year = 2018, country_raw = core$country_raw,
-                    respondent_row_id = seq_len(nrow(sim)), weight = core$weight,
-                    sexo_final = core$sexo_final, idade_final = core$idade_final,
-                    educ3_final = educ$educ3_final, owns_car = core$owns_car,
-                    owns_washing_machine = core$owns_washing_machine)
-banco <- merge(banco, cw, by.x = "country_raw", by.y = "country_numeric")
-res <- suppressWarnings(predict_latinobarometro_income(banco))
+sim <- simulate_latinobarometro_wave(2011, n = 200)
+arquivo <- file.path(tempdir(), "Latinobarometro_2011_sim.dta")
+haven::write_dta(sim, arquivo)
 
-# aggregate use: support for a (synthetic) party among the bottom 50%,
-# weighting each respondent by prob_bottom50 times the survey weight
+res <- income_lato(arquivo)
+res <- res[res$elegivel, ]   # scored respondents only
+
+# simulated outcome, rising with predicted income
 set.seed(1)
-res$supports_A <- rbinom(nrow(res), 1, 0.4)
-ok <- !is.na(res$prob_bottom50)
-w <- res$prob_bottom50[ok] * res$weight[ok]
-round(tapply(w * res$supports_A[ok], res$iso3[ok], sum) / tapply(w, res$iso3[ok], sum), 2)
+p <- 0.40 + 0.25 * res$prob_middle40 + 1.2 * res$prob_top10
+res$supports_democracy <- rbinom(nrow(res), 1, pmin(p, 1))
+
+# share supporting democracy in each income group, by country:
+# each respondent weighted by prob_<group> times the survey weight
+grupos <- c("bottom50", "middle40", "top10")
+share <- sapply(grupos, function(g) {
+  w <- res[[paste0("prob_", g)]] * res$weight
+  tapply(w * res$supports_democracy, res$iso3, sum) / tapply(w, res$iso3, sum)
+})
+round(100 * share, 1)
 ```
 
-With real data, replace the synthetic steps with a single call:
-`income_lato("folder/with/latinobarometro/files")`.
+```{r, include = FALSE}
+unlink(arquivo)
+```
+
+With real data, the variable comes from the Latinobarómetro's standard
+question on preference for democracy. Its name changes between waves, so
+look it up in each wave's questionnaire. `income_lato()` does not carry over
+the other columns of your file; bring the variable in with
+`raw$variable[res$respondent_row_id]`, where `raw` is the wave read with
+`haven::read_dta()` and `respondent_row_id` is the row's position in the
+file.

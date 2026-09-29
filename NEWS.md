@@ -26,14 +26,22 @@ Exclusion reason codes renamed (see README). No change to predictions.
   comparisons are country-wave-party, not country-wave; and the 97% top-party
   agreement under v1.5 is over 66 country-waves, not over the 357
   country-wave-party comparisons.
+* Validation section rewritten around the packaged recipe (script 265 of
+  the research project): the v1.5 model with the v1.4 recalibrators, Mexico
+  uncalibrated, against LAPOP observed income, 66 country-waves, 2008–2018,
+  in-sample for the recalibrators. The numbers cited in 0.1.0 (0.21–0.42,
+  0.97–0.99, 0.670 pp, 97%) came from the v1.4 and v1.5 models without
+  recalibration; the vignette keeps them in a comparison table, labeled as
+  such.
+* README and vignette example rewritten: it now goes through
+  `income_lato()` on a file and shows support for democracy (simulated) in
+  the three income groups by country.
+* The README no longer says that `income_lato()` returns "your data": the
+  other columns of the input file are not carried over, and
+  `respondent_row_id` (the row's position in its file) is the key to bring
+  them in.
 * Checked against v0.1.0 on the real 2018 wave: 16,901 of 16,901
   predictions identical (maximum difference 0).
-
-## Known limitations
-
-* The validation against observed income and the per-group Spearman of
-  party support are still the ones run under model v1.4; redoing them under
-  v1.5 remains the first open issue.
 
 # incomeLato 0.1.0
 

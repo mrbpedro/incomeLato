@@ -60,9 +60,13 @@ res <- income_lato("~/data/latinobarometro", years = c(2018, 2020))
 
 ### The output
 
-`res` is your data with `prob_bottom50`, `prob_middle40`, `prob_top10`
-appended, plus `elegivel` (was the respondent scored), `motivo_exclusao` (why
-not) and per-country quality flags. To inspect the harmonized predictors
+`res` has one row per respondent in your file(s): the harmonized predictors,
+`prob_bottom50`, `prob_middle40`, `prob_top10`, `elegivel` (was the
+respondent scored), `motivo_exclusao` (why not) and per-country quality
+flags. The other columns of your file are not carried over;
+`respondent_row_id` is the row's position in its file, so any variable can be
+brought in with `raw$variable[res$respondent_row_id]`, where `raw` is that
+wave read with `haven::read_dta()`. To inspect the harmonized predictors
 before predicting, run the two steps separately:
 `prepare_latinobarometro_income_inputs()`, then
 `predict_latinobarometro_income()`.
@@ -83,39 +87,85 @@ ones of v0.1.0 (`venezuela_quarentena_arquitetural`,
 `pais_fora_dos_15_ativos`, `fora_da_janela_temporal_valida_do_pais`,
 `preditor_ausente_ou_invalido`, in the same order).
 
+## Example: support for democracy by income group
+
+The example uses synthetic data, written to a temporary file and read the
+way a downloaded wave would be. `supports_democracy` is **simulated** (1 =
+democracy is preferable to any other kind of government), with a probability
+that rises with predicted income, so that the table shows a gradient.
+
+```r
+library(incomeLato)
+sim <- simulate_latinobarometro_wave(2011, n = 200)   # synthetic, no real respondent
+arquivo <- file.path(tempdir(), "Latinobarometro_2011_sim.dta")
+haven::write_dta(sim, arquivo)
+
+res <- income_lato(arquivo)
+res <- res[res$elegivel, ]                            # scored respondents only
+
+# simulated outcome, rising with predicted income
+set.seed(1)
+p <- 0.40 + 0.25 * res$prob_middle40 + 1.2 * res$prob_top10
+res$supports_democracy <- rbinom(nrow(res), 1, pmin(p, 1))
+
+# share supporting democracy in each income group, by country:
+# each respondent weighted by prob_<group> times the survey weight
+grupos <- c("bottom50", "middle40", "top10")
+share <- sapply(grupos, function(g) {
+  w <- res[[paste0("prob_", g)]] * res$weight
+  tapply(w * res$supports_democracy, res$iso3, sum) / tapply(w, res$iso3, sum)
+})
+round(100 * share, 1)
+```
+
+With real data, the variable comes from the Latinobarómetro's standard
+question on preference for democracy. Its name changes between waves, so
+look it up in each wave's questionnaire, and bring it into `res` with
+`raw$variable[res$respondent_row_id]`.
+
 ## Scope and limits: strong in aggregate, weak for individuals
 
-The model was validated against LAPOP in two ways. The first tests what the
-model predicts, income position; the second tests the use the package is
-built for.
+The package was validated against LAPOP, which records household income (the
+`q10` family of questions). Within each country-wave, each income bracket is
+converted into membership in the bottom 50%, middle 40% and top 10%. The
+numbers below apply the packaged recipe (the v1.5 model with the v1.4
+recalibrators, Mexico uncalibrated) to 66 country-waves in 15 countries,
+2008–2018.
 
-### Against observed income
+These checks are **in-sample for the recalibrators**, which were fitted on
+this same LAPOP data. LAPOP never enters the training of the model itself.
 
-LAPOP asks respondents their household income bracket (the `q10` family of
-questions). Within each country-wave, each bracket is converted into
-membership in the bottom 50%, middle 40% and top 10%, and the model's
-probabilities are compared with that observed membership, respondent by
-respondent.
+### Calibration: the level of each income group
 
-| Metric | Model | Result |
-|---|---|---|
-| Spearman between the respondent's predicted class probability and their observed income-class membership; 14 countries, 2008–2023 | v1.4 | 0.21 (middle 40) to 0.42 (bottom 50); N = 92,940 |
+| Metric | Result |
+|---|---|
+| Predicted minus observed share of the bottom 50%, per country-wave: median of the absolute difference | 2.3 pp (7.3 pp without recalibration) |
+| Countries whose median difference is within ±1 pp | 11 of 15 |
+| Countries outside ±2 pp | Ecuador (−2.1), Uruguay (−2.5), Mexico (−2.7, no recalibrator) |
+| Spearman between a respondent's predicted probability and their observed income-group membership: bottom 50 / middle 40 / top 10 | 0.44 / 0.25 / 0.35 |
 
-At the level of one respondent, the model is weak.
+Single country-waves vary more than the medians: the largest difference is
+above 2 pp in 14 of the 15 countries, and reaches 11.6 pp in one Ecuadorian
+wave. At the level of one respondent, the model is weak.
 
 ### In use: the income composition of party support
 
 Here LAPOP vote intention is held fixed and only the income weights change.
 Support for each party within each income group is computed twice, once
-weighting respondents by their observed income-class membership and once by
-the predicted probabilities, and the two results are compared. Each
-comparison is one country-wave-party.
+weighting respondents by their observed income-group membership and once by
+the predicted probabilities, and the two are compared. Each comparison is
+one country-wave-party (357 comparisons).
 
-| Metric | Model | Result |
-|---|---|---|
-| Spearman between the support shares computed with predicted and with observed income weights, per income group | v1.4 | 0.97 (top 10) to 0.99 (bottom 50, middle 40); 339 comparisons |
-| Mean absolute difference in the bottom 50's support share; 15 countries, 2008–2018 | v1.5 | 0.670 pp over 357 comparisons |
-| Party most supported by the bottom 50% is the same under both weights | v1.5 | 97% of 66 country-waves |
+| Metric | Result |
+|---|---|
+| Mean absolute difference in the bottom 50's support share | 0.71 pp |
+| Spearman between the two sets of support shares | 0.97 (top 10) to 0.99 (bottom 50, middle 40) |
+| Party most supported by the bottom 50% is the same | 97% of 66 country-waves |
+
+These metrics barely move with recalibration: support within a group is a
+ratio of weighted sums, so a shift in the level of the weights largely
+cancels out. The vignette compares the packaged recipe with the models
+without recalibration.
 
 In aggregate, the model reproduces what observed income would give.
 
@@ -134,13 +184,14 @@ for describing the composition of groups, within a wave and across waves
   `veredito_deriva_temporal` and `flag_margin` give the per-country drift
   verdict.
 
+The magnitude labels in `veredito_deriva_temporal` come from the
+leave-one-wave-out validation of an earlier model vintage (v1.1).
+`flag_margin` remains a justified caution, because the direction of the
+drift persists under the packaged recipe.
+
 The package issues this notice as a warning on first use in each session,
 and records it in `attr(res, "recommended_use")` and
 `attr(res, "prohibited_use")`.
-
-The validation against observed income and the per-group Spearman of party
-support are still the ones run under model v1.4; redoing them under v1.5 is
-the first open issue.
 
 ## Why v1.5 model with v1.4 recalibrators
 
