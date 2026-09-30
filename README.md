@@ -9,7 +9,7 @@ a frozen, already-validated model (v1.5, 15 countries, waves 1995–2024) to
 Latinobarómetro microdata that you download yourself.
 
 > Source, issues and documentation site: <https://github.com/mrbpedro/incomeLato>
-> · <https://mrbpedro.github.io/incomeLato>.
+> · <https://mrbpedro.r-universe.dev/incomeLato>.
 
 ## How to use
 
@@ -164,7 +164,7 @@ one country-wave-party (357 comparisons).
 
 These metrics barely move with recalibration: support within a group is a
 ratio of weighted sums, so a shift in the level of the weights largely
-cancels out. The vignette compares the packaged recipe with the models
+cancels out. The [vignette](https://mrbpedro.r-universe.dev/articles/incomeLato/when-to-use.html) compares the packaged recipe with the models
 without recalibration.
 
 In aggregate, the model reproduces what observed income would give.

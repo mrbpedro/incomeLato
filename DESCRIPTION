@@ -19,7 +19,7 @@ Description: Applies a frozen multinomial model (version 'v1.5') that
     statistics computed from it. Probabilities are meant as continuous
     weights for aggregate analysis, not for classifying individuals.
 License: MIT + file LICENSE
-URL: https://github.com/mrbpedro/incomeLato, https://mrbpedro.github.io/incomeLato
+URL: https://github.com/mrbpedro/incomeLato, https://mrbpedro.r-universe.dev/incomeLato
 BugReports: https://github.com/mrbpedro/incomeLato/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
