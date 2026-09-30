@@ -6,6 +6,9 @@ tempo. Não é o mapa da pesquisa que o originou (esse está em
 arquivo, que descrevia o pacote com o modelo v1.4, está em
 `../incomeLato_backup_2026-09-29/CONTEXT.md`.
 
+**Estado de publicação, fluxo de versão nova e pendências:** ver
+`../HANDOFF_publicacao_2026-09-30.md` (fora do repositório).
+
 ## O que o pacote faz
 
 Aplica o modelo de renda **v1.5** (pooled15, 15 países, congelado, promovido
@@ -59,9 +62,8 @@ predições: v1.5 bruto difere até 0,31; v1.5 + recalibradores v1.5 difere até
    recalibradores. Continua em aberto: uma medida fora da amostra
    (leave-one-wave-out sobre a v1.5) e, com ela, refazer os vereditos do
    `sysdata.rda`, que vêm da vintage v1.1.
-2. Repositório GitHub, tag `v0.1.0`, DOI Zenodo (substituir
-   `10.5281/zenodo.XXXXXXX` em `inst/CITATION`), `packages.json` do
-   r-universe, URL/BugReports no DESCRIPTION — ações do autor.
+2. Publicação feita (GitHub, releases v0.1.0 e v0.1.1, DOI Zenodo,
+   r-universe). Pendências de publicação na seção 6 do handoff de 30/09.
 3. Formato oficial de citação do Latinobarómetro por rodada — o site não o
    publica nas páginas consultadas; `inst/CITATION` traz um modelo genérico.
 4. Desde a v0.1.1, mensagens, avisos, ajuda das funções e códigos de
