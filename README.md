@@ -1,4 +1,4 @@
-# incomeLato
+# incomeLato <img src="man/figures/logo.png" align="right" height="139" alt="incomeLato hex logo" />
 
 [![DOI](https://zenodo.org/badge/1395470164.svg)](https://doi.org/10.5281/zenodo.23045516)
 
