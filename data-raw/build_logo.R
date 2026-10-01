@@ -99,26 +99,39 @@ gerar_hex <- function(mapa, arquivo, escala_texto = if (grepl("\\.svg$", arquivo
   save_sticker(arquivo, s, dpi = 300)
 }
 
-# social preview do GitHub (1280x640): hex a esquerda, titulo e subtitulo
-# (uma linha) a direita, fundo branco. O hex e rasterizado a partir do SVG
-# (rsvg) ja no tamanho final em pixels (560 px de altura) e colocado em
-# coordenadas inteiras de pixel (100 px por unidade), sem reamostragem.
-social_preview <- function(hex_svg, arquivo) {
-  px <- 100                                     # 1280 px / 12.8 unidades
-  img <- rsvg::rsvg(hex_svg, height = 560)
-  alt <- dim(img)[1] / px; larg <- dim(img)[2] / px
-  p <- ggplot() + scale_x_continuous(limits = c(0, 12.8), expand = c(0, 0)) +
-    scale_y_continuous(limits = c(0, 6.4), expand = c(0, 0)) +
-    annotation_raster(img, xmin = 0.4, xmax = 0.4 + larg, ymin = 0.4, ymax = 0.4 + alt,
+# social preview do GitHub (1280x640). Tudo em coordenadas de pixel:
+# - margem lateral de ~10% (128 px de cada lado; o LinkedIn corta as laterais),
+#   conteudo dentro de x = 128..1152;
+# - hex rasterizado a partir do SVG (rsvg) ja no tamanho final e colocado em
+#   pixels inteiros, sem reamostragem;
+# - titulo e subtitulo desenhados pelo dispositivo no tamanho final (showtext
+#   a 100 dpi, o dpi do ggsave), nao como imagem redimensionada;
+# - subtitulo ~50% maior que na versao de 2026-10-01 (6.9 -> 10.35). Nesse
+#   tamanho ele nao cabe em uma linha ao lado do hex dentro das margens, entao
+#   vai em duas linhas;
+# - PNG sem perda (ragg), conferido abaixo de 1 MB (limite do GitHub).
+SOCIAL <- list(W = 1280, H = 640, margem = 128, hex_h = 440, gap = 48,
+               titulo_size = 27, titulo_y = 338, sub_size = 10.35, sub_y = 302, sub_lh = 1.0)
+social_preview <- function(hex_svg, arquivo, S = SOCIAL) {
+  img <- rsvg::rsvg(hex_svg, height = S$hex_h)
+  hx0 <- S$margem; hy0 <- (S$H - dim(img)[1]) %/% 2
+  tx0 <- hx0 + dim(img)[2] + S$gap
+  p <- ggplot() + scale_x_continuous(limits = c(0, S$W), expand = c(0, 0)) +
+    scale_y_continuous(limits = c(0, S$H), expand = c(0, 0)) +
+    annotation_raster(img, xmin = hx0, xmax = hx0 + dim(img)[2], ymin = hy0, ymax = hy0 + dim(img)[1],
                       interpolate = FALSE) +
-    annotate("text", x = 5.45, y = 3.6, label = "incomeLato", hjust = 0, family = "arial_bold",
-             size = 32, colour = azul[["marinho"]]) +
-    annotate("text", x = 5.5, y = 2.5, hjust = 0, family = "arial_bold", size = 6.9,
-             colour = azul[["medio"]], label = "income position for Latinobarómetro respondents") +
+    annotate("text", x = tx0, y = S$titulo_y, label = "incomeLato", hjust = 0, vjust = 0,
+             family = "arial_bold", size = S$titulo_size, colour = azul[["marinho"]]) +
+    annotate("text", x = tx0 + 3, y = S$sub_y, hjust = 0, vjust = 1, family = "arial_bold",
+             size = S$sub_size, lineheight = S$sub_lh, colour = azul[["medio"]],
+             label = "income position for\nLatinobarómetro respondents") +
     theme_void() + theme(plot.background = element_rect(fill = "#FFFFFF", colour = NA))
   showtext_opts(dpi = 100)
-  ggsave(arquivo, p, width = 12.8, height = 6.4, dpi = 100)
+  ggsave(arquivo, p, width = S$W / 100, height = S$H / 100, dpi = 100, device = ragg::agg_png)
   showtext_opts(dpi = 96)
+  tam <- file.size(arquivo)
+  stopifnot("social preview acima de 1 MB (limite do GitHub)" = tam < 1024^2)
+  invisible(tam)
 }
 
 svg_f <- file.path(out_dir, "incomeLato_logo_silhueta.svg")
